@@ -187,7 +187,7 @@
 | 设计范围 | 正文及边界 |
 | --- | --- |
 | 持续主体与独立任务 | [总设计](../DESIGN.md#core-task-control)、[主体场景](whole-system-design.md#task-independence)、[生命周期](runtime-protocol.md#core-task-lifecycle)；资源和预算仍受共同约束，不承诺无条件即时模型回应 |
-| 控制与收尾 | [运行契约](runtime-protocol.md#task-control)；控制资格和实际停止分开，子工作、新派发及迟到结果纳入范围，无关工作保持 |
+| 控制与收尾 | [运行契约](runtime-protocol.md#task-control)；止动请求、正式接纳和实际停止分别确认，子工作、新派发及迟到结果纳入范围，无关工作保持 |
 | 审计及解除 | 授权决定与建议分开，限定可信来源和范围；多原因解除及重新接纳不能绕过有效阻断；审计算法和全面检查流程未预设 |
 | 管理和评价 | [工作台](management-workspace.md#task-control-management)、[评价场景](sandbox-evaluation.md#task-control-evaluation)；已定义未来验收，不新增待执行实验 |
 | 真实库接入 | [固定提交源码及测试阅读](go-mini-integration.md#task-control-facts)、[工程装配](engineering-reference.md#task-execution)；任务控制映射由宿主补充，资料核对不等于运行验证 |
@@ -210,7 +210,7 @@
 | 个体持久状态 | 个体自由定义主观逻辑，宿主管归属、结构、修订、可见与写入范围及转换；程序和数据结构一致采用 | 不强制统一人格数据，也不把自定义内容变成第二份公共真值；[状态契约](runtime-protocol.md#individual-state) |
 | 能力采用与实现信任 | 功能采用、实现来源／产物信任、用途授权分别成立；受信维护者或既定发布策略授予资格，执行环境满足声明约束才接纳 | 不从测试通过、相同接口或模型自评推导机密访问权；[实现准入](runtime-protocol.md#implementation-trust) |
 | 学习与任务构建 | 关闭主动学习保留必要任务内工具构建；长期安装、泛化和改变主体默认策略另有采用范围。启用探索时可主动提出策略候选 | 不按“是否写代码”分类，不强制先反复失败才产生程序候选；[学习强度](runtime-protocol.md#learning-intensity) |
-| 作用与停止反馈 | Effect 跟踪预期或可能作用，不等同已发生；禁止原业务交付不禁止按受众发送控制回执和必要退出说明 | 不伪造已停止或已成功，不借控制通知恢复任务；[效果](runtime-protocol.md#effects)、[控制](runtime-protocol.md#task-control) |
+| 作用与停止反馈 | Effect 跟踪预期或可能作用，不等同已发生；止动请求、正式控制接纳和实际停止分开；禁止原业务交付不禁止按受众发送控制回执和必要退出说明 | 不从发送或局部停止推断任务中止已接纳，不借控制通知恢复任务；[效果](runtime-protocol.md#effects)、[控制](runtime-protocol.md#task-control) |
 | 文档层次与证据 | 总图先给一级职责，再提供完整关系图；当前逻辑、工程承载、库固定快照、受限模型证据及历史材料各归其位置 | 不把当前源码链接当不可变快照，不把未测写成没有任何模型证据；[维护规范](documentation-guide.md)、[快照入口](go-mini-integration.md#source-snapshots) |
 | 沙箱范围与建议状态 | 通用局部试验按需装配；完整副本请求按既有建议继承完整授权范围。工作台按所选试验模式展示继承范围和缺失状态 | 不以最小任务切片冒称完整副本，重建细则仍待确定；[副本建议](sandbox-evaluation.md#replica) |
 

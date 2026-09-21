@@ -6,7 +6,7 @@
 
 本篇汇总已有实验、设计依据和一手来源。各报告说明实际条件、统计、失败及适用边界；论文、标准和依赖库保留对应版本，不能将不同条件下的结果混用。
 
-目录：[整体任务实验](#whole-task-experiments) · [机制实验](#mechanism-experiments) · [按问题查依据](#topics) · [设计机制依据](#design-closure) · [主动学习依据](#active-learning-sources) · [任务解耦与控制依据](#task-control-sources) · [一致性审计依据](#consistency-basis) · [既有论文与标准](#sources)
+目录：[整体任务实验](#whole-task-experiments) · [机制实验](#mechanism-experiments) · [按问题查依据](#topics) · [设计机制依据](#design-closure) · [主动学习依据](#active-learning-sources) · [任务解耦与控制依据](#task-control-sources) · [跨模块一致性依据](#consistency-basis) · [既有论文与标准](#sources)
 
 实验报告按运行时的条件解释。分布式接管等历史方案不属于当前架构，其实验也不能证明现行系统具备相同机制。
 
@@ -49,13 +49,9 @@
 | <a id="report-009"></a>009 · [取消、恢复与冲突](experiments/009-cancel-restore-evidence.md) | 取消竞争、旧快照重复风险和冲突证据需处理 | 依赖给定可信来源与恢复条件，不证明完整灾备 |
 | <a id="report-010"></a>010 · [本地存储与维护](experiments/010-local-storage.md) | 文件先发布后提交、稳定锁对象、维护排空及完整备份；长读影响写入与 checkpoint | 小型 SQLite／Linux 夹具，未测 Go 驱动、完整认知闭环、吞吐或掉电 |
 
-<a id="learning"></a>
-<a id="attention-planning"></a>
-<a id="evidence-routing-evolution"></a>
-
 <a id="consistency-basis"></a>
 
-### 整体一致性修订的依据范围
+### 跨模块一致性的依据范围
 
 [跨模块规则](research-plan.md#architecture-consistency)定义步骤内独立操作接纳、带类型控制、公共决策整合、配置约束、个体状态及实现信任。已有证据支持各项分工，但尚无完整组合协议的端到端验证结果。
 
@@ -69,16 +65,16 @@
 
 ## 按问题定位论证
 
-| 问题 | 当前机制 | 原论证及来源 |
+| 问题 | 当前机制 | 论证与来源 |
 | --- | --- | --- |
 | 完整任务契约与有效路径 | [责任收尾](whole-system-design.md#task-contract)、[评价环境](sandbox-evaluation.md#outcome-contract) | [任务验收依据](#task-contract-sources)、[报告 015](experiments/015-task-outcome-contract.md) |
-| 上下文与任务接续 | [活动工作区](whole-system-design.md#workspace) | [上下文设计走查](whole-system-evidence.md#design-closure)，P1 |
-| 心智协作 | [协作机制](whole-system-design.md#organization) | [协作推导](whole-system-evidence.md#design-closure)，P2；[多人格分因素对照](whole-system-evidence.md#interaction-references) |
-| 交付与经验 | [学习](whole-system-design.md#memory) | [反馈及反思](whole-system-evidence.md#design-closure)，P3–P5 |
-| 何时继续、如何读取和评价 | [任务循环](whole-system-design.md#loop) | [原验收分析](whole-system-evidence.md#design-closure)，P6–P8 |
-| 关注、计划与程序复用 | [目标与计划](../DESIGN.md#attention-planning) | [原任务核对](whole-system-evidence.md#design-closure)，P9–P11 |
-| 来源修订、路由与版本采用 | [来源与能力](../DESIGN.md#knowledge) | [依据](whole-system-evidence.md#design-closure)，P12–P14 |
-| 意愿、规范、身份、情感 | [交流与情境](interaction-design.md) | [各专题原资料](interaction-design.md#validation)；[报告 016](#report-016)补充合成人物／受众场景，不提供真实身份或情感效果的保证 |
+| 上下文与任务接续 | [活动工作区](whole-system-design.md#workspace) | [Lost in the Middle：长上下文使用限制](#source-lost-in-middle) |
+| 心智协作 | [协作机制](whole-system-design.md#organization) | [Scaling Agent Systems：协作与任务匹配](#source-agent-scaling)；[人格及协作资料](#interaction-references) |
+| 交付与经验 | [学习](whole-system-design.md#memory) | [Reflexion：反馈与反思](#source-reflexion)、[自我纠错限制](#source-self-correction)、[SCoRe：训练前提](#source-score) |
+| 何时继续、如何读取和评价 | [任务循环](whole-system-design.md#loop) | [Self-RAG：按需检索](#source-self-rag)、[模型评价的偏差](#source-model-judges)、[LongMemEval：记忆评价](#source-longmemeval) |
+| 关注、计划与程序复用 | [目标与计划](../DESIGN.md#attention-planning) | [混合主动交互原则](#source-mixed-initiative)、[Plan-and-Act：动态重规划](#source-plan-and-act)、[Voyager：程序积累](#source-voyager) |
+| 来源修订、路由与版本采用 | [来源与能力](../DESIGN.md#knowledge) | [PROV-DM：来源与修订](#source-prov)、[RouteLLM：模型路由](#source-routellm)、[AI Agents That Matter：成本与泛化](#source-agent-evaluation) |
+| 意愿、规范、身份、情感 | [交流与情境](interaction-design.md) | [交互设计的资料与边界](interaction-design.md#validation)；[报告 016](#report-016)补充合成人物／受众场景，不提供真实身份或情感效果的保证 |
 | 投影、外部事件源、缓存与沙箱 | [资源](projection-input-and-compute.md)、[沙箱](sandbox-evaluation.md) | 各篇来源表保留具体版本与未测范围；计时夹具不证明核心必须内置闹钟 |
 | 统一资源、Secret 类型及情境投影 | [公共属性与类型规则](projection-input-and-compute.md#resource-contract)、[操作接纳](runtime-protocol.md#resource-operations) | [NIST 属性授权与 W3C 来源模型](projection-input-and-compute.md#resource-evidence)，2026-09-21 查阅；支持概念组织，报告 012／013 不证明完整资源契约或机密隔离已测 |
 | 统一事件与活动接续 | [事件主线](../DESIGN.md#event-driven)、[共同协议](runtime-protocol.md#events) | [CloudEvents 参考与证据边界](runtime-protocol.md#event-sources-evidence)；报告 012／014 为局部流程，016／017 补充受控来源与接续对照；完整体系未测 |
@@ -219,20 +215,20 @@
 
 | ID | 资料、论文修订与日期 | 来源定位 | 支持的有限命题 | 不能外推的项目效果 |
 | --- | --- | --- | --- | --- |
-| P1 | [Lost in the Middle，论文修订 3，2023-11-20](https://arxiv.org/abs/2307.03172v3)；[TACL 2024 正式入口](https://aclanthology.org/2024.tacl-1.9/) | 摘要中的多文档问答和键值检索条件 | 能容纳长输入不保证有效使用任意位置的信息 | 当前模型如何使用任务骨架、原文和历史 |
-| P2 | [Scaling Agent Systems，论文修订 3，2026-04-08](https://arxiv.org/html/2512.08296v3) | §4 任务结构、预算比较；§5 限制 | 协作与任务匹配相关，更多参与者没有普遍优势 | 私人记忆、长期任务、邀请策略和实际总成本 |
-| P3 | [Reflexion，论文修订 4，2023-10-10](https://arxiv.org/html/2303.11366v4) | §2 Evaluator／Self-reflection；§5 限制 | 反馈、反思和记忆可组织成后续尝试的输入 | 跨任务经验是否有效、反馈误差怎样影响结果 |
-| P4 | [LLMs Cannot Self-Correct Reasoning Yet，论文修订 2，2024-03-14](https://arxiv.org/html/2310.01798v2) | 内在纠错定义；§6 比较建议；§7 限制 | 论文所测推理中的自我纠错不保证改进，比较需计额外调用 | 当前模型与真实任务的纠错能力，不作永久能力断言 |
-| P5 | [SCoRe，论文修订 2，2024-10-04](https://arxiv.org/abs/2409.12917v2)；[ICLR 2025 正式入口](https://proceedings.iclr.cc/paper_files/paper/2025/hash/871ac99fdc5282d0301934d23945ebaa-Abstract-Conference.html) | 摘要中的多轮 RL 训练前提 | 专门训练可改变所测自我纠错能力 | 不把训练效果当作现成模型外挂反思的保证 |
-| P6 | [Self-RAG，论文修订 1，2023-10-17](https://arxiv.org/html/2310.11511v1) | 摘要、§3 训练与推理 | 按需检索和证据评价可联合研究；该方法包含专门训练 | 现成模型的缺口判断与停止策略，不直接复用论文性能 |
-| P7 | [LLM-as-a-Judge，论文修订 4，2023-12-24](https://arxiv.org/html/2306.05685v4) | 摘要中的用途与局限 | 模型评价能辅助偏好比较，也存在位置、冗长与自我偏好等偏差 | 本任务上的判分可信度、真人一致性与顺序影响 |
-| P8 | [LongMemEval，论文修订 2，2025-03-04](https://arxiv.org/html/2410.10813v2) | 摘要的五项能力及索引／召回／读取分解 | 记忆评价需要覆盖更新、时间、多轮关联与无答案情形 | TinyAGI 经验适用性及实际任务效果；不把聊天记忆成绩当学习迁移证明 |
-| P9 | [Principles of Mixed-Initiative User Interfaces，CHI 1999，1999-05](https://www.microsoft.com/en-us/research/publication/principles-mixed-initiative-user-interfaces/)；[原文](https://www.microsoft.com/en-us/research/wp-content/uploads/2016/11/chi99horvitz.pdf) | pp. 1–2 的设计原则；LookOut 日程交互场景 | 自动行动需要考虑用户目标的不确定性、注意力、时机及成本收益 | 从交互原则到多活动选择是设计推论，不证明调度公平性或最优策略 |
-| P10 | [Plan-and-Act，论文修订 3，2025-04-22](https://arxiv.org/html/2503.09572v3) | §3.3 动态重规划，§5 实验条件与 §6 后的 Limitations | 分离高层计划与具体动作、根据观察修订计划有研究依据；实验涉及专门训练的模型 | 现成模型能否选择合适重规划时机，额外成本是否值得；不直接外推论文成绩 |
-| P11 | [Voyager，论文修订 2，2023-10-19](https://arxiv.org/html/2305.16291v2) | §2.2 可复用代码，§2.3 执行反馈与迭代 | Minecraft 中可将已成功的程序积累、检索和组合，用于后续任务 | 普通程序包的实际复用收益与适用边界，不证明一般认知演化或现实任务迁移 |
-| P12 | [PROV-DM，W3C Recommendation，2013-04-30](https://www.w3.org/TR/2013/REC-prov-dm-20130430/) | §5.2 推导、修订、引用与原始来源；§5.3 归属 | 可以分别表达来源、生成过程及修订关系，帮助评估材料 | 不能由来源图直接判定事实正确；断言抽取与语义冲突识别需另测 |
-| P13 | [RouteLLM，论文修订 4，2025-02-23](https://arxiv.org/html/2406.18665v4) | §3 路由目标、§4 偏好数据与方法 | 偏好数据训练与阈值选择可用于研究模型质量／成本取舍 | 当前模型、完整多步任务、失败切换与本机资源条件尚未验证 |
-| P14 | [AI Agents That Matter，论文修订 1，2024-07-01](https://arxiv.org/html/2407.01502v1) | §2 成本控制、§3 联合评价、§5 保留样本 | 只看准确率会遗漏成本；保留任务需匹配希望宣称的泛化范围 | 本项目采用阈值、真实用途评价与长期回归仍需实际数据 |
+| <a id="source-lost-in-middle"></a>P1 | [Lost in the Middle，论文修订 3，2023-11-20](https://arxiv.org/abs/2307.03172v3)；[TACL 2024 正式入口](https://aclanthology.org/2024.tacl-1.9/) | 摘要中的多文档问答和键值检索条件 | 能容纳长输入不保证有效使用任意位置的信息 | 当前模型如何使用任务骨架、原文和历史 |
+| <a id="source-agent-scaling"></a>P2 | [Scaling Agent Systems，论文修订 3，2026-04-08](https://arxiv.org/html/2512.08296v3) | §4 任务结构、预算比较；§5 限制 | 协作与任务匹配相关，更多参与者没有普遍优势 | 私人记忆、长期任务、邀请策略和实际总成本 |
+| <a id="source-reflexion"></a>P3 | [Reflexion，论文修订 4，2023-10-10](https://arxiv.org/html/2303.11366v4) | §2 Evaluator／Self-reflection；§5 限制 | 反馈、反思和记忆可组织成后续尝试的输入 | 跨任务经验是否有效、反馈误差怎样影响结果 |
+| <a id="source-self-correction"></a>P4 | [LLMs Cannot Self-Correct Reasoning Yet，论文修订 2，2024-03-14](https://arxiv.org/html/2310.01798v2) | 内在纠错定义；§6 比较建议；§7 限制 | 论文所测推理中的自我纠错不保证改进，比较需计额外调用 | 当前模型与真实任务的纠错能力，不作永久能力断言 |
+| <a id="source-score"></a>P5 | [SCoRe，论文修订 2，2024-10-04](https://arxiv.org/abs/2409.12917v2)；[ICLR 2025 正式入口](https://proceedings.iclr.cc/paper_files/paper/2025/hash/871ac99fdc5282d0301934d23945ebaa-Abstract-Conference.html) | 摘要中的多轮 RL 训练前提 | 专门训练可改变所测自我纠错能力 | 不把训练效果当作现成模型外挂反思的保证 |
+| <a id="source-self-rag"></a>P6 | [Self-RAG，论文修订 1，2023-10-17](https://arxiv.org/html/2310.11511v1) | 摘要、§3 训练与推理 | 按需检索和证据评价可联合研究；该方法包含专门训练 | 现成模型的缺口判断与停止策略，不直接复用论文性能 |
+| <a id="source-model-judges"></a>P7 | [LLM-as-a-Judge，论文修订 4，2023-12-24](https://arxiv.org/html/2306.05685v4) | 摘要中的用途与局限 | 模型评价能辅助偏好比较，也存在位置、冗长与自我偏好等偏差 | 本任务上的判分可信度、真人一致性与顺序影响 |
+| <a id="source-longmemeval"></a>P8 | [LongMemEval，论文修订 2，2025-03-04](https://arxiv.org/html/2410.10813v2) | 摘要的五项能力及索引／召回／读取分解 | 记忆评价需要覆盖更新、时间、多轮关联与无答案情形 | TinyAGI 经验适用性及实际任务效果；不把聊天记忆成绩当学习迁移证明 |
+| <a id="source-mixed-initiative"></a>P9 | [Principles of Mixed-Initiative User Interfaces，CHI 1999，1999-05](https://www.microsoft.com/en-us/research/publication/principles-mixed-initiative-user-interfaces/)；[原文](https://www.microsoft.com/en-us/research/wp-content/uploads/2016/11/chi99horvitz.pdf) | pp. 1–2 的设计原则；LookOut 日程交互场景 | 自动行动需要考虑用户目标的不确定性、注意力、时机及成本收益 | 从交互原则到多活动选择是设计推论，不证明调度公平性或最优策略 |
+| <a id="source-plan-and-act"></a>P10 | [Plan-and-Act，论文修订 3，2025-04-22](https://arxiv.org/html/2503.09572v3) | §3.3 动态重规划，§5 实验条件与 §6 后的 Limitations | 分离高层计划与具体动作、根据观察修订计划有研究依据；实验涉及专门训练的模型 | 现成模型能否选择合适重规划时机，额外成本是否值得；不直接外推论文成绩 |
+| <a id="source-voyager"></a>P11 | [Voyager，论文修订 2，2023-10-19](https://arxiv.org/html/2305.16291v2) | §2.2 可复用代码，§2.3 执行反馈与迭代 | Minecraft 中可将已成功的程序积累、检索和组合，用于后续任务 | 普通程序包的实际复用收益与适用边界，不证明一般认知演化或现实任务迁移 |
+| <a id="source-prov"></a>P12 | [PROV-DM，W3C Recommendation，2013-04-30](https://www.w3.org/TR/2013/REC-prov-dm-20130430/) | §5.2 推导、修订、引用与原始来源；§5.3 归属 | 可以分别表达来源、生成过程及修订关系，帮助评估材料 | 不能由来源图直接判定事实正确；断言抽取与语义冲突识别需另测 |
+| <a id="source-routellm"></a>P13 | [RouteLLM，论文修订 4，2025-02-23](https://arxiv.org/html/2406.18665v4) | §3 路由目标、§4 偏好数据与方法 | 偏好数据训练与阈值选择可用于研究模型质量／成本取舍 | 当前模型、完整多步任务、失败切换与本机资源条件尚未验证 |
+| <a id="source-agent-evaluation"></a>P14 | [AI Agents That Matter，论文修订 1，2024-07-01](https://arxiv.org/html/2407.01502v1) | §2 成本控制、§3 联合评价、§5 保留样本 | 只看准确率会遗漏成本；保留任务需匹配希望宣称的泛化范围 | 本项目采用阈值、真实用途评价与长期回归仍需实际数据 |
 
 这些资料分别支持设计动机、条件和反例，不组成 TinyAGI 整体认知有效的证明。交付与跟进的划分主要来自用户任务的职责分析，未声称由论文直接验证。
 

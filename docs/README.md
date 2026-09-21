@@ -47,7 +47,7 @@
 | --- | --- |
 | 设计约束、已定设计、建议与配置 | [设计状态](research-plan.md#closure-status)、[基础设计](research-plan.md#remaining-questions)、[管理设计状态](research-plan.md#management-extension) |
 | 已有实验、失败和原始数据 | [实验索引](whole-system-evidence.md#experiments)；各报告保持原条件 |
-| 走查、论文、标准和来源命题 | [按问题查依据](whole-system-evidence.md#topics)、[资料记录](whole-system-evidence.md#design-closure) |
+| 论文、标准和来源命题 | [按问题查依据](whole-system-evidence.md#topics)、[设计机制资料](whole-system-evidence.md#design-closure)、[论文与标准记录](whole-system-evidence.md#sources) |
 | 文档怎样保持一致 | [维护规范](documentation-guide.md) |
 | 构建网站、Mermaid、GitHub Pages 与公开范围 | [文档发布说明](documentation-publishing.md) |
 
