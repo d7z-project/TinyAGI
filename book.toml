@@ -1,0 +1,24 @@
+[book]
+title = "TinyAGI 设计文档"
+description = "统一主体、认知协作、能力扩展与运行契约的设计资料"
+language = "zh-CN"
+src = ".mdbook-src"
+
+[build]
+build-dir = "book"
+create-missing = false
+
+[preprocessor.mermaid]
+command = "mdbook-mermaid"
+
+[output.html]
+additional-js = ["mermaid.min.js", "mermaid-init.js"]
+default-theme = "light"
+preferred-dark-theme = "navy"
+smart-punctuation = true
+
+[output.html.fold]
+enable = false
+
+[output.html.playground]
+runnable = false

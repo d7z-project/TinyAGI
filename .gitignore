@@ -1,0 +1,28 @@
+# Local experiments: scripts, fixtures, raw model replies and runtime metadata.
+/experiments/
+
+# Local discussion history and editor state.
+/GPT.md
+/.idea/
+*.iml
+.DS_Store
+
+# Credentials and local configuration.
+.env
+.env.*
+!.env.example
+*.local.env
+*.pem
+*.key
+
+# Generated documentation and Mermaid assets installed by mdbook-mermaid.
+/.mdbook-src/
+/book/
+/mermaid.min.js
+/mermaid-init.js
+
+# Temporary language/build artifacts.
+__pycache__/
+*.py[cod]
+node_modules/
+target/

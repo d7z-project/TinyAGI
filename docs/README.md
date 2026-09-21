@@ -1,0 +1,127 @@
+# 文档索引
+
+用途：阅读与术语索引｜更新：2026-09-21。
+
+[项目入口](../README.md) · [完整总设计](../DESIGN.md) · [设计收尾](research-plan.md)
+
+默认阅读当前正文；历史材料只用于查证来源，不是另一套设计。所有状态与配置边界统一见[设计台账](research-plan.md#research-status)。
+
+<a id="reading-paths"></a>
+
+## 阅读路线
+
+| 阅读目的 | 路线 |
+| --- | --- |
+| 建立整体认识 | [总设计](../DESIGN.md#reading-guide) → 目标／逻辑总图 → 核心概念 → 完整场景 → 机制与取舍 |
+| 核对跨专题一致性 | [统一决策](research-plan.md#architecture-consistency) → [步骤与操作](runtime-protocol.md#step-operation-admission)／[公共决策](whole-system-design.md#public-decisions)／[配置与当前约束](runtime-protocol.md#configuration-resolution) |
+| 理解任务解耦与外部中止 | [总体架构](../DESIGN.md#core-task-control) → [控制契约](runtime-protocol.md#task-control) → [控制台](management-workspace.md#task-control-management) → [mini-go 依据](go-mini-integration.md#task-control-facts) |
+| 使用客户端预制能力 | [总体选择](../DESIGN.md#prebuilt-capabilities) → [维护与调用契约](runtime-protocol.md#prebuilt-library) → [工程接入](engineering-reference.md#client-library) |
+| 创建与更新人物 | [总体流程](../DESIGN.md#initialization-migration) → [引导契约](runtime-protocol.md#bootstrap-migration) → [管理入口](management-workspace.md#initialization-management) → [工程接入](engineering-reference.md#prompt-bootstrap) |
+| 深入某项机制 | 从总设计或下表进入对应专题；专题维护详细规则，其他文档只保留必要概览和链接 |
+| 理解具体承载 | [工程参考](engineering-reference.md#physical-architecture) → 技术栈／存储／能力接入 → [库事实](go-mini-integration.md) |
+| 核对选择与状态 | [设计台账](research-plan.md#closure-status) → 采用理由／备选／用途配置 → [证据索引](whole-system-evidence.md) |
+
+<a id="topics"></a>
+
+## 六份逻辑设计专题
+
+| 专题 | 唯一维护的详细机制 |
+| --- | --- |
+| [主体运行、认知协作与学习](whole-system-design.md) | 关注、工作区、连续性、任务责任、多人格组织与公共整合、经验形成、主动学习议程及策略迭代 |
+| [交流、人物与情境](interaction-design.md) | 意愿与投入、信任／污染、规范／格式、身份／隐私、情感／角色及主动联系 |
+| [资源投影、输入与计算](projection-input-and-compute.md) | 资源发现／读取、功能性仿生、外部事件源、有限思考及缓存／KV 分工 |
+| [逻辑模块、能力契约与运行协议](runtime-protocol.md) | 状态归属、统一事件、能力构建与运行对象、学习强度及关闭、模型端口、步骤／操作接纳与生命周期、配置解析、个体状态与实现信任 |
+| [沙箱、能力评估与回归](sandbox-evaluation.md) | 局部／组合／副本试验、构建环境、AGI 副本生命周期、隔离、复盘、测试材料、基线、评价及采用 |
+| [管理工作台与人工干预](management-workspace.md) | 管理入口及身份、模型／服务及能力构建维护、用户机密与可信提交、动态表单／蓝图、提交与观察 |
+
+跨专题边界：工作台发起操作，原状态所有者接纳；副本规则由沙箱维护；机密完整流程由工作台维护，运行协议只定义调用边界；工程承载不写进逻辑图。
+
+<a id="engineering"></a>
+
+## 工程参考
+
+| 参考 | 唯一维护范围 |
+| --- | --- |
+| [工程选型与部署](engineering-reference.md) | 物理部署、软件组合、技术栈、能力工具链／子进程、存储／文件、向量服务及选型依据 |
+| [go-mini 库行为与接入](go-mini-integration.md) | 固定提交的读取记录、MRPC 多语言／资源／替换、实例／scope／补丁及宿主接入限制 |
+
+<a id="experiments"></a>
+<a id="development-tasks"></a>
+
+## 决策与证据
+
+| 查什么 | 位置 |
+| --- | --- |
+| 已确认要求、已定设计、建议与配置 | [设计状态](research-plan.md#closure-status)、[原七项决定](research-plan.md#remaining-questions)、[管理设计状态](research-plan.md#management-extension) |
+| 已有实验、失败和原始数据 | [实验索引](whole-system-evidence.md#experiments)；各报告保持原条件 |
+| 走查、论文、标准和来源命题 | [按问题查依据](whole-system-evidence.md#topics)、[资料记录](whole-system-evidence.md#design-closure) |
+| 文档怎样保持一致 | [维护规范](documentation-guide.md) |
+| 构建网站、Mermaid、GitHub Pages 与公开范围 | [文档发布说明](documentation-publishing.md) |
+
+当前设计不使用产品版本号。历史写稿号、实验修订号、论文修订和依赖版本按各自对象解释；冻结材料中的旧名称不改写为现行要求。
+
+<a id="terms"></a>
+
+## 术语定位
+
+| 概念组 | 当前定义位置 |
+| --- | --- |
+| Episode、Task、Operation、尝试与控制传播 | [身份和生命周期](runtime-protocol.md#core-task-lifecycle)、[控制语义](runtime-protocol.md#task-control) |
+| 步骤内独立接纳、请求键、最终提案与已接纳操作 | [接纳时序](runtime-protocol.md#step-operation-admission)、[工程提交](engineering-reference.md#commit) |
+| 私有 Mind 状态、活动委托、Self 公共整合 | [公共决定](whole-system-design.md#public-decisions)、[总体关系](../DESIGN.md#self-integration) |
+| 普通配置、作用域覆盖、当前权限与控制 | [解析与生效](runtime-protocol.md#configuration-resolution)、[管理视图](management-workspace.md#editing) |
+| 个体自定义状态、结构修订与迁移 | [逻辑契约](runtime-protocol.md#individual-state)、[存储映射](engineering-reference.md#individual-state-storage) |
+| 功能采用、实现信任、固定产物与环境准入 | [逻辑边界](runtime-protocol.md#implementation-trust)、[工程承载](engineering-reference.md#implementation-admission) |
+| 当前源码链接、固定 Git 快照与未提交内容摘要 | [读取方式](go-mini-integration.md#source-snapshots)、[历史沙箱读取记录](go-mini-integration.md#sandbox-library-facts) |
+| 核心／任务解耦、认知中断、任务阻断／中止、外部审计控制 | [主体场景](whole-system-design.md#task-independence)、[生命周期](runtime-protocol.md#core-task-lifecycle)、[控制](runtime-protocol.md#task-control)、[工程](engineering-reference.md#task-execution)、[评价](sandbox-evaluation.md#task-control-evaluation)、[状态](research-plan.md#task-control-extension) |
+| 客户端预制能力库、只读维护、可选使用与个体包装 | [逻辑契约](runtime-protocol.md#prebuilt-library)、[管理](management-workspace.md#prebuilt-management)、[评价](sandbox-evaluation.md#prebuilt-evaluation)、[库事实](go-mini-integration.md#prebuilt-library-facts)、[状态](research-plan.md#prebuilt-extension) |
+| 完整初始化提示词、个体差异、Self 自迁移与引导修复 | [人物形成](whole-system-design.md#self-initialization)、[运行契约](runtime-protocol.md#bootstrap-migration)、[检查场景](sandbox-evaluation.md#initialization-evaluation)、[状态](research-plan.md#initialization-extension) |
+| API 弃用、兼容窗口、提示词差异与客户端更新 | [工程映射](engineering-reference.md#prompt-bootstrap)、[库事实](go-mini-integration.md#deprecation-facts)、[管理入口](management-workspace.md#initialization-management) |
+| 主动学习、兴趣探索、学习议程与自我迭代 | [总设计](../DESIGN.md#active-learning)、[主体策略](whole-system-design.md#active-learning)、[评价](sandbox-evaluation.md#learning-evaluation)、[状态](research-plan.md#active-learning-extension) |
+| 学习强度、关闭主动学习、明确学习任务与恢复 | [运行契约](runtime-protocol.md#learning-intensity)、[管理控件](management-workspace.md#learning-management)、[工程接入](engineering-reference.md#active-learning-integration)、[库装配](go-mini-integration.md#active-learning-adapter) |
+| 能力构建、接口、产物、采用与运行对象 | [整体闭环](../DESIGN.md#capability-development)、[逻辑契约](runtime-protocol.md#capability-lifecycle)、[管理入口](management-workspace.md#capability-management)、[确认范围](research-plan.md#capability-extension) |
+| MRPC、Go／Rust／Node.js（npm）、工具链、子 VM 与子进程 | [工程工具链](engineering-reference.md#capability-toolchain)、[库事实与接入](go-mini-integration.md#rpc-extension-facts)、[JavaScript RPC](go-mini-integration.md#javascript-rpc-facts)、[Node 工程接入](engineering-reference.md#node-rpc-integration)、[试验分层](sandbox-evaluation.md#test-scopes) |
+| 热加载、编写契约、结构化注释与受管理函数 | [总设计](../DESIGN.md#hot-reload-contract)、[逻辑契约](runtime-protocol.md#managed-functions)、[表单与蓝图](management-workspace.md#dynamic-editing)、[函数测试](sandbox-evaluation.md#function-evaluation)、[工程生成工具](engineering-reference.md#managed-function-tooling) |
+| 模型资产／推理服务维护、secret 投影与使用绑定 | [管理范围](management-workspace.md#technical-management)、[Secret](management-workspace.md#secret-projection)、[运行契约](runtime-protocol.md#secret-contract)、[工程映射](engineering-reference.md#maintenance-secrets) |
+| 用户机密归属、专用指令、一次性提交及过滤转换 | [归属与授权](management-workspace.md#secret-ownership)、[可信提交](management-workspace.md#secret-command)、[处理流程](management-workspace.md#secret-pipeline)、[用户场景](management-workspace.md#secret-scenario) |
+| 逻辑模块、状态所有者、ModelRequest／Result | [职责](runtime-protocol.md#software-modules)、[模型端口](runtime-protocol.md#model-port) |
+| Self、Mind、Persona、Role、Person | [总概念](../DESIGN.md#domain)、[协作](whole-system-design.md#organization)、[人物](interaction-design.md#identity) |
+| 任务契约、有效结果集合、责任收尾 | [主体任务](whole-system-design.md#task-contract)、[评价环境](sandbox-evaluation.md#outcome-contract)、[状态定义](research-plan.md#closure-status) |
+| 证据未知、主体退出、原目标达成与活动结束 | [结果与责任的分工](../DESIGN.md#responsibility-outcomes)、[接纳与退出](interaction-design.md#commitments) |
+| Goal、Episode、关注表、工作区、计划 | [运行循环](whole-system-design.md#loop)、[工作区](whole-system-design.md#workspace) |
+| Step、执行上下文、模型会话、Continuation | [连续性边界](whole-system-design.md#boundaries)、[运行步骤](runtime-protocol.md#step-context) |
+| 意愿、可答性、快慢投入、承担范围 | [回应](interaction-design.md#response)、[承诺](interaction-design.md#commitments) |
+| 观测、命题、来源权威、污染 | [观测与信任](interaction-design.md#observation) |
+| 规范、适用性、输出契约 | [规范](interaction-design.md#norms)、[格式](interaction-design.md#output) |
+| 跨平台关联、参与者、受众、情境保密 | [关联](interaction-design.md#linking)、[隐私](interaction-design.md#privacy) |
+| 情感评价、剧情、虚拟伴侣、主动联系 | [情感与角色](interaction-design.md#affect)、[问候与提醒](interaction-design.md#initiative) |
+| Projection、资源发现、主动读取 | [资源边界](projection-input-and-compute.md#projection) |
+| 统一事件、来源、订阅、请求／结果、内部接续 | [总事件主线](../DESIGN.md#event-driven)、[协议](runtime-protocol.md#events)、[外部通知源示例](projection-input-and-compute.md#event-sources) |
+| 读取／计算缓存、KV、有限思考 | [缓存](projection-input-and-compute.md#cache)、[投入](projection-input-and-compute.md#effort) |
+| 向量数据库、Go SDK、本地／远程与产品选型 | [接入参考](engineering-reference.md#vector-service)、[官方依据](engineering-reference.md#vector-sources) |
+| 公共 API、事件接入／观察、ResourceSearch／VectorIndex | [公共契约](runtime-protocol.md#capability-api)、[检索责任](runtime-protocol.md#vector-service) |
+| Sandbox、重放、重新评估、反事实 | [沙箱职责](sandbox-evaluation.md#architecture)、[模式](sandbox-evaluation.md#modes) |
+| 能力画像、用例／套件、开发／回归／保留任务 | [评估层次与覆盖](sandbox-evaluation.md#evaluation-design)、[测试材料](sandbox-evaluation.md#test-cases) |
+| 基线、评价器、退化与采用门槛 | [可比条件](sandbox-evaluation.md#baselines)、[评价器](sandbox-evaluation.md#graders)、[判定与报告](sandbox-evaluation.md#regression-gates) |
+| Operation、Effect、Outcome、unknown | [操作与效果](runtime-protocol.md#operations)、[用途评价](../DESIGN.md#outcomes) |
+| 依赖、执行条件、结果复核 | [复核](runtime-protocol.md#revalidation) |
+| RunID、InstanceID、Generation、DeploymentSeq | [库身份映射](go-mini-integration.md#deployment)、[逻辑身份](runtime-protocol.md#identity) |
+| 技术栈、软件依赖、SQLite、文件发布、锁与备份 | [工程参考](engineering-reference.md)、[历史细节](archive/runtime-details.md) |
+| 经验、Reference、认知程序修订与候选采用 | [学习](whole-system-design.md#memory)、[候选](../DESIGN.md#branches) |
+
+<a id="maintenance"></a>
+
+## 历史与兼容入口
+
+**原推导、旧路径及历史讨论**
+
+| 材料 | 保留目的 |
+| --- | --- |
+| [设计研究材料](archive/design-studies.md) | 原场景、论文、备选及开发对照；不是当前机制或任务队列 |
+| [运行机制细节](archive/runtime-details.md) | 依赖、恢复、结算及存储的历史推导，不构成待办 |
+| [机制研究原规格](archive/mechanism-research.md) | E0–E8／S1 的原问题与条件 |
+| [GPT.md](../GPT.md) | 大型历史讨论，按总设计[历史映射](../DESIGN.md#history-map)定位 |
+
+原回应、信任、人物、情感、多人格、连续性、恢复、复核、存储及审计文件仅保留章节跳转；分布式／平台旧路径仅保留撤销说明。它们不再承担当前正文，也不属于默认阅读顺序。这样冻结报告和旧引用仍可追溯，而新编辑只改对应当前专题。
+
+编辑与验证规则统一见[文档维护规范](documentation-guide.md)。
