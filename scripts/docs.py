@@ -20,7 +20,7 @@ ROOT = Path(__file__).resolve().parents[1]
 STAGING = ROOT / ".mdbook-src"
 BOOK = ROOT / "book"
 LINK = re.compile(r"(?P<image>!?)\[(?P<label>[^\]\n]+)\]\((?P<url>[^\s)]+)\)")
-PRIVATE_ROOTS = ("experiments/", "GPT.md", ".idea/", ".env")
+PRIVATE_ROOTS = ("experiments/", "GPT.md", "AGENTS.md", ".idea/", ".env")
 RULES = {
     "API credential": re.compile(
         r"\b(?:sk-[A-Za-z0-9_-]{16,}|gh[pousr]_[A-Za-z0-9_]{20,}"
@@ -87,10 +87,12 @@ def chapters() -> list[Path]:
 def check() -> list[Path]:
     paths = chapters()
     failures = []
-    for path in [*paths, ROOT / "SUMMARY.md", ROOT / "AGENTS.md"]:
+    for path in [*paths, ROOT / "SUMMARY.md"]:
         text = path.read_text()
         name = str(path.relative_to(ROOT))
         failures.extend(scan(text, name))
+        if re.search(r"本轮|上一轮|用户认可|按最新要求|兼容旧引用", text):
+            failures.append(f"{name}: editorial conversation or obsolete navigation in public text")
         if re.search(r"<\s*/?\s*(?:details|summary)\b", text, re.I):
             failures.append(f"{name}: collapsed content is not allowed")
         # No include directive can read a file outside the curated chapter set.
@@ -112,8 +114,6 @@ def prepare() -> None:
     paths = check()
     allowed = {str(p.relative_to(ROOT)) for p in paths}
     prepared = {}
-    local_references = 0
-    upstream_references = 0
 
     def book_name(name: str) -> str:
         path = PurePosixPath(name)
@@ -124,7 +124,6 @@ def prepare() -> None:
         parent = posixpath.dirname(name) or "."
 
         def rewrite(match: re.Match) -> str:
-            nonlocal local_references, upstream_references
             raw = match["url"]
             url = urlsplit(raw)
             if url.scheme or url.netloc or not url.path:
@@ -132,16 +131,6 @@ def prepare() -> None:
             target = posixpath.normpath(posixpath.join(parent, unquote(url.path)))
             fragment = "#" + url.fragment if url.fragment else ""
             label = match["label"]
-            if target == "GPT.md" or target.startswith("experiments/"):
-                if match["image"]:
-                    raise ValueError(f"{name}: local-only image cannot be published")
-                local_references += 1
-                destination = posixpath.relpath("docs/documentation-publishing.md", parent)
-                return f"[{label}（本地材料，不发布）]({destination}#local-materials)"
-            if target.startswith("../go-mini/"):
-                upstream_references += 1
-                suffix = target.removeprefix("../go-mini/")
-                return f"[{label}](https://github.com/d7z-team/go-mini/blob/main/{suffix}{fragment})"
             if target not in allowed:
                 raise ValueError(f"{name}: link target is not a public chapter: {target}")
             destination = posixpath.relpath(book_name(target), parent)
@@ -163,7 +152,7 @@ def prepare() -> None:
         (ROOT / "SUMMARY.md").read_text(),
     )
     (STAGING / "SUMMARY.md").write_text(summary)
-    print(f"Prepared {len(prepared)} chapters; mapped {local_references} local references and {upstream_references} upstream links.")
+    print(f"Prepared {len(prepared)} public chapters.")
 
 
 class Page(HTMLParser):

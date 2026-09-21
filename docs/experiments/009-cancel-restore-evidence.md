@@ -1,18 +1,18 @@
-# E8e：取消竞争、备份恢复与冲突证据
+# 报告 009 · 取消竞争、备份恢复与冲突证据
 
-[文档索引](../README.md#experiments) · [总体设计](../../DESIGN.md#execution) · [研究状态](../research-plan.md#e8e) · [当前方案](../recovery-decisions.md)
+[文档索引](../README.md#experiments) · [总体设计](../../DESIGN.md#execution) · [研究状态](../research-plan.md#remaining-questions) · [当前方案](../runtime-protocol.md#recovery)
 
 日期：2026-09-19。受控进程与本地 SQLite 实验，不是数据库集群、Kubernetes 或设备验证。
 
 ## 1. 条件与执行
 
-在保留 DESIGN v2.2 后固定[18 例预登记](../../experiments/cancel-restore-evidence/README.md)，再编写[独立脚本](../../experiments/cancel-restore-evidence/experiment.py)。provider 保存进入／关闭状态，world 独立追加效果，authority 保存证据与资源账务；库间无事务。Python 3.14.7、SQLite 3.53.4，WAL／FULL，子进程通过管道屏障协调。
+在保留 DESIGN v2.2 后固定18 例预登记，再编写独立脚本。provider 保存进入／关闭状态，world 独立追加效果，authority 保存证据与资源账务；库间无事务。Python 3.14.7、SQLite 3.53.4，WAL／FULL，子进程通过管道屏障协调。
 
 备份和恢复使用 SQLite backup API，并在实验进程已退出、连接关闭后进行。world 不随 provider 回退，模拟真实效果不因业务备份恢复而撤销。恢复分支只读 provider 状态，效果表用于评分。B4/B5 的入口关闭、旧进程隔离和新工作资源／预算核对由实验驱动保证，不是自动灾备实现。
 
-首次完整运行通过：**18 例、52 个子进程、2 次 SIGKILL、270 项检查，错误 0**。[原始 JSON](../../experiments/results/cancel-restore-evidence.json)保存事件、参数、中间状态和终态。所有子进程均按预期退出，无兜底清理强杀；断言数含屏障／退出码，不是独立样本数，也不表示故障概率。
+首次完整运行通过：**18 例、52 个子进程、2 次 SIGKILL、270 项检查，错误 0**。原始 JSON 保存事件、参数、中间状态和终态。所有子进程均按预期退出，无兜底清理强杀；断言数含屏障／退出码，不是独立样本数，也不表示故障概率。
 
-当前无 postgres／psql／initdb、kubectl 或 kind。docker 命令实际进入 Podman，查询配置即因运行目录只读失败，未启动容器或安装软件。PostgreSQL、etcd、Kubernetes 与 gRPC 的真实恢复／取消行为通过[一手资料](../recovery-decisions.md#external-evidence)约束，未计入本实验通过数。
+当前无 postgres／psql／initdb、kubectl 或 kind。docker 命令实际进入 Podman，查询配置即因运行目录只读失败，未启动容器或安装软件。PostgreSQL、etcd、Kubernetes 与 gRPC 的真实恢复／取消行为通过[一手资料](../runtime-protocol.md#recovery)约束，未计入本实验通过数。
 
 ## 2. 对照结果
 
@@ -24,7 +24,7 @@
 | A4 关闭提交后丢确认 | 重试仍 closed，后续进入拒绝 | 查询／重试应复用关闭状态 |
 | A5 关闭提交前终止 | 回滚为 queued，后续效果 1 | 未提交请求不能被解释为取消完成 |
 | A6 取消早于接纳 | 墓碑拒绝迟到接纳及进入 | 无记录也要关闭原请求的未来入口 |
-| A7 真实事务竞争 | 本次进入赢，取消仅受理，效果 1 | 结局符合二选一；另一个顺序由 A2 固定覆盖 |
+| A7 真实事务竞争 | 本实验进入赢，取消仅受理，效果 1 | 结局符合二选一；另一个顺序由 A2 固定覆盖 |
 | B1 旧快照重用代号 1 | 历史代号 2 已完成，旧代号 1 再产生效果，累计 2 | 持久记录也可因恢复而倒退 |
 | B2 恢复后仅加一 | 再次得到历史代号 2，累计效果 2 | 加一不能证明超过丢失的历史 |
 | B3 仅更换 RecoveryID | 旧身份被拒，但新身份重发原键，累计效果 2 | 新身份不能替代效果去重／核对 |
@@ -44,7 +44,7 @@ A1 的最终状态为 finished，中间 closed 及回执见轨迹；不能只查
 - **采用受控恢复关闭流程。** 旧快照恢复先保持入口关闭、隔离旧执行者、登记新 RecoveryID，再重建指派、预算及历史责任。丢失连续性的旧键默认待核对，不能由新身份自动重发。
 - **采用不可覆盖的证据与冲突状态。** source＋ProofID 的相同内容是重送，不同内容保留为冲突；入账事务检查冲突。结算后才到矛盾，保留原账并暂停受影响资源的新分配，追加核对责任。
 
-否决缓存 queued 放行、恢复后计数加一即可复用、新 UUID 即可重放、最后到达证据覆盖、仅事务外检查证据五种充分性保证。详细协议、资料支持与剩余验收见[恢复决策](../recovery-decisions.md)。
+否决缓存 queued 放行、恢复后计数加一即可复用、新 UUID 即可重放、最后到达证据覆盖、仅事务外检查证据五种充分性保证。详细协议、资料支持与剩余验收见[恢复决策](../runtime-protocol.md#recovery)。
 
 ## 4. 范围与限制
 
@@ -54,12 +54,14 @@ B4/B5 不测试“外部恢复控制本身也被还原”“仍活跃旧工作�
 
 C 只覆盖同 source＋ProofID 的互相矛盾内容及一个资源域。不同事件、不同来源、不同时间的事实可能是正常状态变化，不能一概当冲突；自动语义判断、证据修正权限、冲突消解后解封和已重分配资源的处理均待验证。固定小对象的 SHA-256 内容比较不是密码学认证或通用证据判真。
 
-## 5. 复现与校验
-
-运行命令见预登记；输出路径排他创建，复跑必须换路径。本次没有修订或重跑。旧 E0～E8d 证据保持不变。
+运行命令见预登记；输出路径排他创建，复跑必须换路径。本实验没有修订或重跑。旧 E0～E8d 证据保持不变。
 
 | 文件 | SHA-256 |
 | --- | --- |
 | 预登记 README.md | `92c4ea467ce57003e3857587570e2ace5254d916d5f52a9b54f988c62383bc73` |
 | experiment.py | `eab37547550ea66082e3385f354d2c1a6309ae74fd21e88ba556a014b7d6bf09` |
 | cancel-restore-evidence.json | `e670d184debd08cadcb93e329e8b616d147b8171f51a29042ebb34618e86012b` |
+
+## 数据可用性
+
+本报告公开实验条件、汇总统计和失败分析。原始输入、脚本及逐次运行记录未随报告发布，因此不能仅凭本文独立复现实验。

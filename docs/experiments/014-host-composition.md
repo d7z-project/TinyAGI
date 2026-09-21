@@ -1,26 +1,28 @@
-# 014 · C1e：单宿主整体组件组合
+# 报告 014 · 单宿主整体组件组合
 
 日期：2026-09-20（Asia/Shanghai）｜证据：真实 Go／go-mini／SQLite／文件／回环 HTTP；确定提供者与虚拟时间环境｜阶段：独立研究。
 
-[总设计](../../DESIGN.md#software-architecture) · [软件与技术栈](../runtime-protocol.md#software-modules) · [预登记](../../experiments/host-composition/README.md) · [原始运行](../../experiments/host-composition/results/README.md)
+[总设计](../../DESIGN.md#software-architecture) · [软件与技术栈](../runtime-protocol.md#software-modules)
 
 ## 问题及条件
 
-检查当前选定的单进程组件是否能够组合成完整任务，而不是继续扩展故障边界。相对于 C1c，新增的证据是实际 go-mini 经异步 FFI 组织 Go 宿主、同一二进制中的 SQLite 与本地文件、模型端口 JSON 往返及关闭 VM 后从业务状态接续。
+检查当前选定的单进程组件是否能够组合成完整任务，而不是继续扩展故障边界。相对于报告 012，新增的证据是实际 go-mini 经异步 FFI 组织 Go 宿主、同一二进制中的 SQLite 与本地文件、模型端口 JSON 往返及关闭 VM 后从业务状态接续。
 
 推理位置使用确定程序：它只读取收到的 HTTP 上下文，依据实际读到的方案计算可行最低价；没有真实模型调用或任何认知质量成绩。任务与正确答案为公开合成开发材料，不是保留集。采用条件在输入冻结后未更改。
 
 | 环境 | 实际身份 |
 | --- | --- |
 | Go／主机 | `go1.27.1-X:nodwarf5`，Linux/amd64；不是未修改上游工具链的兼容认证 |
-| go-mini | 已提交 `2f58a21748b92bae83ee37cca570ceb9bf387692` 的 git archive；未引用相邻工作区未提交修改 |
+| go-mini | 已提交 `2f58a21748b92bae83ee37cca570ceb9bf387692` 的 git archive |
 | SQLite 驱动 | `modernc.org/sqlite v1.59.0`，`modernc.org/libc v1.75.7`；实际 SQLite `3.53.4` |
 | 构建 | CGO_ENABLED=0，GOWORK=off，GOTOOLCHAIN=local；独立 go.mod／go.sum |
 | 存储／状态 | 一个 SQLite 文件、一个连接、本地资源和各活动试验目录；顺序执行 |
 | 提供者／交付／时间 | 同进程回环 HTTP 确定夹具；SQLite 模拟收件箱；环境在等待建立后释放虚拟闹钟及修订输入 |
 | 预算 | 每活动最多 20 次提供者调用、每分段最多 12 次、墙钟 20 秒；实际没有触发预算上限 |
 
-预登记输入 SHA-256：`66021ef2cd686239f03869768d74d33ae886c9d0caff14ac1abd75dddf4bf407`。源码归档 SHA-256：`442380c7ec42e6bffd56621ca3e7fc723fbcedbd522f9f761951c58f7d0e9af5`。完整环境、二进制和依赖身份见[environment.json](../../experiments/host-composition/results/run-001/environment.json)及[模块清单](../../experiments/host-composition/results/run-001/binary-modules.txt)。
+预登记输入 SHA-256：`66021ef2cd686239f03869768d74d33ae886c9d0caff14ac1abd75dddf4bf407`。源码归档 SHA-256：`442380c7ec42e6bffd56621ca3e7fc723fbcedbd522f9f761951c58f7d0e9af5`。
+
+完整环境、二进制和依赖身份见environment.json及模块清单。
 
 ## 结果
 
@@ -38,7 +40,7 @@
 
 本机生成 28,617,645 字节的 ELF 可执行文件；`readelf` 未列出 INTERP 段，并报告没有 dynamic section。这支持该最小组件组合在所测目标下不需动态链接 SQLite／C 运行库，不证明完整产品大小、跨平台发行或可选 GPU／音视频依赖。FTS5 建表成功只证明该驱动构建具备该功能。
 
-原始统计及逐活动状态见[summary.json](../../experiments/host-composition/results/run-001/data/summary.json)，上下文、响应及完整执行记录见各活动的 packets.json／trace.json，原数据库和文件一起保留。
+原始统计及逐活动状态见summary.json，上下文、响应及完整执行记录见各活动的 packets.json／trace.json，原数据库和文件一起保留。
 
 ## 对设计的影响
 
@@ -53,7 +55,7 @@
 
 最后一项是由实际输出驱动的设计修订，尚未在该冻结脚本中实现或重新验证。错误控制原始响应和 VM 错误原样保留。
 
-## 限制与未完成项
+## 适用边界
 
 - 宿主函数、认知脚本和提供者策略均为小型研究夹具；模型选择过程没有不确定性。没有真实模型、人格讨论、情感或长期记忆实验。
 - 上下文使用结构化活动快照，不覆盖真实提供者的多轮历史、并行工具关联、签名续接、流式终止或 KV。该次预算未耗尽，不证明所有预算路径。
@@ -61,6 +63,10 @@
 - 产物校验是固定可行性与来源／交付检查；“未出现未来已读版本”也只是所录 packet 的检查，不是对所有隐蔽信道的证明。
 - 两段仍在同一宿主进程，任务说明和预算配置由宿主对象保留，SQLite 保存活动进度／读取／产物／调用数；未测试仅凭数据库重建全部宿主状态。
 - 没有实现完整 Operation／Step 提交、原子多对象更新、恢复／崩溃、热更新或实际平台交付。不能用本例取代已有运行协议，也不在此补做这些底层实验。
-- 不比较模型质量、性能、分词召回、动态路由或文档清理效果。真实模型的 Q1 仍未关闭。
+- 不比较模型质量、性能、分词召回、动态路由或文档清理效果。未检验真实模型的完整任务表现。
 
 下一步先固定一个真实提供者、模型版本和可执行预算，将基线／工作区两种认知组织接入相同环境并评阅完整产物；不再重复本例来充当认知进展。
+
+## 数据可用性
+
+本报告公开实验条件、汇总统计和失败分析。原始输入、脚本及逐次运行记录未随报告发布，因此不能仅凭本文独立复现实验。

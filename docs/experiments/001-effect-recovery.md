@@ -1,6 +1,6 @@
-# E0：动作恢复的受限状态枚举
+# 报告 001 · 动作恢复的受限状态枚举
 
-[文档索引](../README.md#experiments) · [当前设计](../../DESIGN.md#evidence) · [研究问题](../research-plan.md#e0)
+[文档索引](../README.md#experiments) · [当前设计](../../DESIGN.md#evidence) · [研究问题](../research-plan.md#remaining-questions)
 
 日期：2026-09-19。证据层次：受限状态模型。结论状态：发现反例，支持在特定条件下保留动作不确定性；未验证真实执行系统。
 
@@ -76,16 +76,14 @@
 
 下一次扩展可加入延迟到达的旧请求、去重记录过期、参数与提供者切换、取消与执行竞态，尝试推翻当前理想化去重分支的保证。
 
-## 6. 复现
-
-脚本：[effect_recovery_model.py](../../experiments/effect_recovery_model.py)。原始输出：[effect-recovery.json](../../experiments/results/effect-recovery.json)。依赖仅为 Python 标准库；本次使用 Python 3.14.7，无网络、无模型调用、无真实外部动作。
+依赖仅为 Python 标准库；本实验使用 Python 3.14.7，无网络、无模型调用、无真实外部动作。
 
 从仓库根目录执行：
-
-```bash
-python3 experiments/effect_recovery_model.py
-```
 
 脚本 SHA-256：`d14015c0778115d63aea8120b55e48bc1c3b9cc024ac464a844c8c8d30d29173`。
 
 这是独立研究脚本，未连接产品运行时。修改模型后应重新生成结果并更新报告，保留假设变化与反例，不能把旧结论套用到新模型。
+
+## 数据可用性
+
+本报告公开实验条件、汇总统计和失败分析。原始输入、脚本及逐次运行记录未随报告发布，因此不能仅凭本文独立复现实验。

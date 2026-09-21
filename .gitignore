@@ -3,6 +3,7 @@
 
 # Local discussion history and editor state.
 /GPT.md
+/AGENTS.md
 /.idea/
 *.iml
 .DS_Store

@@ -4,45 +4,23 @@
 
 [文档索引](README.md) · [工程映射](engineering-reference.md#vm-deployment) · [总体设计](../DESIGN.md#vm-deployment) · [设计状态](research-plan.md#research-status)
 
-基础库核对日期为 2026-09-19；沙箱接口的来源身份记录于 2026-09-20。[宿主组合实验](experiments/014-host-composition.md)实际运行提交 `2f58a21748b92bae83ee37cca570ceb9bf387692` 的导出快照，覆盖编译、独立实例、异步 FFI 和跨实例业务接续；未重新验证下表全部热更新行为，也未使用相邻未提交修改。
+基础库核对日期为 2026-09-19。[宿主组合实验](experiments/014-host-composition.md)实际运行提交 `2f58a21748b92bae83ee37cca570ceb9bf387692` 的导出快照，覆盖编译、独立实例、异步 FFI 和跨实例业务接续；未重新验证下表全部热更新行为。
 
 第 1 节按各自固定提交记录库行为与适用边界，其余章节维护宿主接入设计。运行分段、步骤约束和部署流程按当前[设计决策与边界](research-plan.md#remaining-questions)解释，不自动安排验证。库接口存在不等于系统设计已成立。
 
-早期基础核对固定于 `../go-mini` 提交 `7c195d9`（2026-09-18，`feat: add revision diagnostics and improve runtime fairness`）。结论来自文档、实现和测试源码阅读；记录的是该提交快照，不表示相邻仓库以后始终处于同一版本。
+早期基础核对使用 go-mini 提交 `7c195d9`（2026-09-18，`feat: add revision diagnostics and improve runtime fairness`）。结论来自文档、实现和测试源码阅读；记录的是该提交快照，不同提交的行为须分别核对。
 
 TinyAGI 的独立研究模块使用同一提交执行了[生命周期与补丁实验](experiments/002-vm-continuity.md)，没有运行或修改 go-mini 自身的回归测试。接口阅读证据与实测结果分别保留。
 
-本地资料入口（指向当前相邻工作区，并非不可变证据）：[架构](../../go-mini/ARCHITECTURE.md)、[使用指南](../../go-mini/USAGE.md)、[RPC 指南](../../go-mini/RPC.md)。这些链接依赖两个仓库互为相邻目录，不表示 TinyAGI 已添加依赖。
+上游资料：[架构](https://github.com/d7z-team/go-mini/blob/main/ARCHITECTURE.md)、[使用指南](https://github.com/d7z-team/go-mini/blob/main/USAGE.md)、[RPC 指南](https://github.com/d7z-team/go-mini/blob/main/RPC.md)。这些概览链接跟随上游主分支；下方事实表中的源码链接使用对应固定提交。
 
-本篇目录：[快照读取](#source-snapshots) · [沙箱接口记录](#sandbox-library-facts) · [1. 已确认的基础](#library-facts)／[管理补充核对](#management-library-review)／[命名入口依据](#managed-entry-facts)／[RPC 与嵌入补充](#rpc-extension-facts)／[JavaScript RPC](#javascript-rpc-facts)／[弃用与源码事实](#deprecation-facts)／[任务执行与控制依据](#task-control-facts)／[预制库依据](#prebuilt-library-facts)／[初始化适配](#bootstrap-adapter)／[主动学习接入](#active-learning-adapter) · [2. 三层分工](#responsibilities) · [3. 认知循环与运行分段](#runtime-segments) · [4. 业务安全边界与补丁提交](#patch) · [5. 部署标识与崩溃恢复](#deployment) · [6. 回收与关闭](#cleanup) · [7. 影子验证的边界](#shadow-validation)。
+本篇目录：[快照读取](#source-snapshots) · [1. 已确认的基础](#library-facts)／[管理补充核对](#management-library-review)／[命名入口依据](#managed-entry-facts)／[RPC 与嵌入补充](#rpc-extension-facts)／[JavaScript RPC](#javascript-rpc-facts)／[弃用与源码事实](#deprecation-facts)／[任务执行与控制依据](#task-control-facts)／[预制库依据](#prebuilt-library-facts)／[初始化适配](#bootstrap-adapter)／[主动学习接入](#active-learning-adapter) · [2. 三层分工](#responsibilities) · [3. 认知循环与运行分段](#runtime-segments) · [4. 业务安全边界与补丁提交](#patch) · [5. 部署标识与崩溃恢复](#deployment) · [6. 回收与关闭](#cleanup) · [7. 影子验证的边界](#shadow-validation)。
 
 <a id="source-snapshots"></a>
 
-## 固定快照与当前文件的读取方式
+## 源码版本与证据范围
 
-下文的相邻文件链接用于定位当前源码，可能已随上游修改；结论以每段注明的提交、读取范围和实验条件为准。需要复查提交态文件时，在 TinyAGI 根目录读取固定对象，例如：
-
-```sh
-git -C ../go-mini show 7c195d9:USAGE.md
-git -C ../go-mini show 2f58a21748b92bae83ee37cca570ceb9bf387692:USAGE.md
-git -C ../go-mini show a0d1558571159cb017d12e4a0a4c1cbf795f8b9a:runtime/instance_call.go
-git -C ../go-mini show 295eb19d74305bd39c3ddf0fa88e01c52fdc446b:RPC.md
-```
-
-对其他路径沿对应段落的提交替换冒号后的路径；不以今天的 HEAD、文件存在或测试源码内容冒充当时运行证据。若本机不再保有相应 Git 对象，明确记为快照暂不可读取。工作区未提交内容只有摘要时，该摘要只能核对重新取得的原文件，不能从提交自动还原；原内容不可得时保留历史记录及限制，不将当前文件充当原件。
-
-<a id="sandbox-library-facts"></a>
-
-### 沙箱接口的历史读取记录
-
-核对日期：2026-09-20。核对时相邻 go-mini 的 HEAD 为 `2f58a21748b92bae83ee37cca570ceb9bf387692`，当时工作区有未提交修改；该次只核对沙箱相关接口，不更新旧报告或将既有 `7c195d9` 实验解释成新版本测试。
-
-| 来源及范围 | 支持的命题 | 推论与限制 |
-| --- | --- | --- |
-| [go-mini USAGE](../../go-mini/USAGE.md)：实例、资源限制、系统能力；[能力装配源码](../../go-mini/stdlib/host/host.go)、[文件后端接口](../../go-mini/stdlib/host/os/filesystem.go)；上述 HEAD 对应文件未修改 | 实例持有独立状态，宿主选择 FFI／providers，可注入 Clock／Entropy；guest 计费与进程资源分开，取消不保证宿主 I/O 已退出 | 用独立实例配受控后端构造试验；库接口存在不证明 TinyAGI 路由隔离、预算执行或整体测试完成 |
-| [runtime/vm.go](../../go-mini/runtime/vm.go)：工作区的 InstanceOptions／Limits 声明，文件 SHA-256 见下 | 声明 FFI、Clock、Entropy、步数／分配／任务等选项 | 只确认读取的工作区声明，不宣称该修改已提交、已运行或安全通过 |
-
-该次读取的文件身份：`USAGE.md` SHA-256 `5e213e02ff2c15668370397202e426bef872cb1ae77dcfba4ea5136c17d07615`；含未提交修改的 `runtime/vm.go` SHA-256 `8410fcef3d07128f2b733852654a6c5c038288ce236aaeb0a2346befe5c5eb5f`。该次核对未修改相邻仓库或运行其回归测试；其他版本能力不由本节推断。
+下方事实表按提交标识引用源码。复查时使用对应提交，不能以主分支当前内容代替历史证据。源码中存在测试用例，只能证明该用例已经定义；实际运行结果另见实验报告。
 
 <a id="library-facts"></a>
 
@@ -73,7 +51,7 @@ git -C ../go-mini show 295eb19d74305bd39c3ddf0fa88e01c52fdc446b:RPC.md
 
 ### 管理、副本与动态编辑的补充核对
 
-于 2026-09-20 只读核对相邻 go-mini HEAD `a0d1558571159cb017d12e4a0a4c1cbf795f8b9a` 的 [USAGE](../../go-mini/USAGE.md)，该文件无工作区修改；以下不覆盖原报告的库版本或实测范围：
+于 2026-09-20 只读核对go-mini 提交 `a0d1558571159cb017d12e4a0a4c1cbf795f8b9a` 的 [USAGE](https://github.com/d7z-team/go-mini/blob/a0d1558571159cb017d12e4a0a4c1cbf795f8b9a/USAGE.md)；以下不覆盖原报告的库版本或实测范围：
 
 | 库文档明确的行为 | 设计影响 |
 | --- | --- |
@@ -85,12 +63,12 @@ git -C ../go-mini show 295eb19d74305bd39c3ddf0fa88e01c52fdc446b:RPC.md
 
 ### 命名入口与编写契约的接入依据
 
-核对日期：2026-09-20；相邻库提交 `a0d1558571159cb017d12e4a0a4c1cbf795f8b9a`，仅阅读文档和源码，未运行测试。
+核对日期：2026-09-20；go-mini 提交 `a0d1558571159cb017d12e4a0a4c1cbf795f8b9a`，仅阅读文档和源码，未运行测试。
 
 | 已确认事实 | 本项目采用方式与边界 |
 | --- | --- |
-| [USAGE 入口生命周期](../../go-mini/USAGE.md)、[Instance 调用实现](../../go-mini/runtime/instance_call.go)：Call／Start 在当前 revision 的显式入口表查找名称；未登记时报错 | 从受管理函数声明生成 EntryPoint 或稳定分派入口，不能直接宣称可调用任意内部符号 |
-| [编译会话](../../go-mini/compiler/service/session.go)接受 EntryPoints；[调用集成测试源码](../../go-mini/integrations/calls_test.go)展示函数到命名入口的显式映射 | 支持生成适配方向；测试源码阅读不等于这轮运行测试或验证任意类型映射 |
+| [USAGE 入口生命周期](https://github.com/d7z-team/go-mini/blob/a0d1558571159cb017d12e4a0a4c1cbf795f8b9a/USAGE.md)、[Instance 调用实现](https://github.com/d7z-team/go-mini/blob/a0d1558571159cb017d12e4a0a4c1cbf795f8b9a/runtime/instance_call.go)：Call／Start 在当前 revision 的显式入口表查找名称；未登记时报错 | 从受管理函数声明生成 EntryPoint 或稳定分派入口，不能直接宣称可调用任意内部符号 |
+| [编译会话](https://github.com/d7z-team/go-mini/blob/a0d1558571159cb017d12e4a0a4c1cbf795f8b9a/compiler/service/session.go)接受 EntryPoints；[调用集成测试源码](https://github.com/d7z-team/go-mini/blob/a0d1558571159cb017d12e4a0a4c1cbf795f8b9a/integrations/calls_test.go)展示函数到命名入口的显式映射 | 支持生成适配方向；测试源码阅读不等于这轮运行测试或验证任意类型映射 |
 | 当前同一实例已有 active execution 时拒绝再启动入口；FFI 回调不能同步重入同一 Instance | 管理调用沿宿主调度，测试可在独立沙箱实例进行，不从函数登记推导任意并发调用 |
 | 旧帧、defer、闭包保留旧 revision；补丁保持 globals、导出及命名类型／函数状态契约 | 长期状态由宿主管理，跨调用保存函数标识，边界切换；不兼容契约仍需新实例与明确转换 |
 
@@ -100,7 +78,7 @@ git -C ../go-mini show 295eb19d74305bd39c3ddf0fa88e01c52fdc446b:RPC.md
 
 ### RPC、多语言服务与局部 VM 的补充核对
 
-核对日期：2026-09-20；相邻 go-mini 提交 `a0d1558571159cb017d12e4a0a4c1cbf795f8b9a`。只读核对 [RPC.md](../../go-mini/RPC.md)、[USAGE.md](../../go-mini/USAGE.md)、[ARCHITECTURE.md](../../go-mini/ARCHITECTURE.md)，并检索标准宿主及 Rust runtime 源码；未运行生成器、编译器、RPC 服务或测试，未改写早期实验版本与成绩。
+核对日期：2026-09-20；go-mini 提交 `a0d1558571159cb017d12e4a0a4c1cbf795f8b9a`。只读核对 [RPC.md](https://github.com/d7z-team/go-mini/blob/a0d1558571159cb017d12e4a0a4c1cbf795f8b9a/RPC.md)、[USAGE.md](https://github.com/d7z-team/go-mini/blob/a0d1558571159cb017d12e4a0a4c1cbf795f8b9a/USAGE.md)、[ARCHITECTURE.md](https://github.com/d7z-team/go-mini/blob/a0d1558571159cb017d12e4a0a4c1cbf795f8b9a/ARCHITECTURE.md)，并检索标准宿主及 Rust runtime 源码；未运行生成器、编译器、RPC 服务或测试，未改写早期实验版本与成绩。
 
 | 已确认的库事实／检索边界 | 本项目接入方式与限制 |
 | --- | --- |
@@ -118,7 +96,7 @@ git -C ../go-mini show 295eb19d74305bd39c3ddf0fa88e01c52fdc446b:RPC.md
 | 同一活跃 Instance 的重入限制、scope 清理与逻辑限额见命名入口及使用指南 | 子试验使用独立 Instance；父活动预算覆盖全部分支，逻辑限额不代表原生进程资源隔离 |
 | 对 stdlib、Go runtime 及 Rust runtime 源码的本次检索未确认通用操作系统子进程管理服务 | 使用宿主标准库封装进程管理的设计；VM 内部任务不能当作系统子进程，检索结果不是对所有未来库能力的否定 |
 
-接入顺序：定义能力接口和管理元数据 → 使用 MRPC 生成绑定 → 实现 Go／Rust／Node.js 或 Mini-Go 服务 → 经受控工具链／实例形成产物与试验结果 → 按采用规则准备运行 → 在调用边界切换实际绑定 → 观察结果并回收所属资源。该顺序是当前 TinyAGI 设计，未实际执行；Node.js 的新增库支持按下面的独立快照解释，不改写上表旧提交的确认范围。
+接入顺序：定义能力接口和管理元数据 → 使用 MRPC 生成绑定 → 实现 Go／Rust／Node.js 或 Mini-Go 服务 → 经受控工具链／实例形成产物与试验结果 → 按采用规则准备运行 → 在调用边界切换实际绑定 → 观察结果并回收所属资源。该顺序是当前 TinyAGI 设计，未实际执行；Node.js 的新增库支持按下面的独立快照解释，不改写上表旧提交的设计范围。
 
 具体工程选择、原生进程管理、构建环境及官方工具链依据见[能力工具链](engineering-reference.md#capability-toolchain)；逻辑生命周期见[运行协议](runtime-protocol.md#capability-lifecycle)，小型实例与主体副本的用途分层见[沙箱](sandbox-evaluation.md#test-scopes)。
 
@@ -126,16 +104,16 @@ git -C ../go-mini show 295eb19d74305bd39c3ddf0fa88e01c52fdc446b:RPC.md
 
 ### JavaScript／TypeScript 与 Node.js RPC 补充核对
 
-核对日期：2026-09-21；相邻 go-mini 固定提交 `295eb19d74305bd39c3ddf0fa88e01c52fdc446b`，读取时工作区无未提交修改。以下为文档、包声明、实现及测试源码阅读；未安装 npm 包、生成绑定、编译或运行互通测试。当前文件链接的固定读取方式见[快照说明](#source-snapshots)。
+核对日期：2026-09-21；go-mini 固定提交 `295eb19d74305bd39c3ddf0fa88e01c52fdc446b`。以下为文档、包声明、实现及测试源码阅读；未安装 npm 包、生成绑定、编译或运行互通测试。源码版本的解释见[证据范围](#source-snapshots)。
 
-| 来源与已确认范围 | TinyAGI 接入与边界 |
+| 来源与已设计范围 | TinyAGI 接入与边界 |
 | --- | --- |
-| [RPC 指南](../../go-mini/RPC.md)：TypeScript／JavaScript API；`.mrpc` 可用 `-ts-out` 生成 TypeScript ESM，支持客户端与 Provider，`-ts-runtime` 指定 SDK 导入 | 延伸同一接口来源，JavaScript 从生成绑定构建；不手写平行协议，不将 TS 类型检查当作业务授权 |
-| [SDK 说明](../../go-mini/playground/runtime-rust/runtime-wasm/README.md)及[包声明](../../go-mini/playground/runtime-rust/runtime-wasm/package.json)：包名 `@d7z-team/mini-go`，当前声明版本 `0.1.0`、Node `>=22.18.0`；`/rpc` 与 `/rpc-worker` 有 Node／浏览器条件导出 | 采用 `@d7z-team/mini-go/rpc`；版本是此次库声明，不是 TinyAGI 产品版本，也不证明 npm 公共仓库发布状态。具体部署固定所取得分发物 |
-| [Node RPC 入口](../../go-mini/playground/runtime-rust/runtime-wasm/sdk/node-rpc.ts)、[Worker](../../go-mini/playground/runtime-rust/runtime-wasm/sdk/node-rpc-worker.ts)、[网络适配](../../go-mini/playground/runtime-rust/runtime-wasm/sdk/rpc-network.ts)：Worker 加载 WASM RPC Endpoint，经 WebSocket 建立连接 | Node 能直接调用／发布服务，不需 Mini-Go Program；仍须分发 SDK 的 Worker／WASM 资源。未由此确认 Node RPC 支持 Unix socket，也不把 Worker 当完整沙箱 |
-| RPC 指南及[RPC 类型](../../go-mini/playground/runtime-rust/runtime-wasm/sdk/rpc-types.ts)、[连接实现](../../go-mini/playground/runtime-rust/runtime-wasm/sdk/rpc-runtime.ts)：显式 timeoutMs／AbortSignal，close 与 terminate 分开；断线结束待处理工作，资源失效后重新连接并绑定 | 宿主提供期限并保留操作事实；取消等待或终止 Worker 不证明处理函数／外部动作已停止，不自动重试不明动作 |
+| [RPC 指南](https://github.com/d7z-team/go-mini/blob/295eb19d74305bd39c3ddf0fa88e01c52fdc446b/RPC.md)：TypeScript／JavaScript API；`.mrpc` 可用 `-ts-out` 生成 TypeScript ESM，支持客户端与 Provider，`-ts-runtime` 指定 SDK 导入 | 延伸同一接口来源，JavaScript 从生成绑定构建；不手写平行协议，不将 TS 类型检查当作业务授权 |
+| [SDK 说明](https://github.com/d7z-team/go-mini/blob/295eb19d74305bd39c3ddf0fa88e01c52fdc446b/playground/runtime-rust/runtime-wasm/README.md)及[包声明](https://github.com/d7z-team/go-mini/blob/295eb19d74305bd39c3ddf0fa88e01c52fdc446b/playground/runtime-rust/runtime-wasm/package.json)：包名 `@d7z-team/mini-go`，当前声明版本 `0.1.0`、Node `>=22.18.0`；`/rpc` 与 `/rpc-worker` 有 Node／浏览器条件导出 | 采用 `@d7z-team/mini-go/rpc`；版本是此次库声明，不是 TinyAGI 产品版本，也不证明 npm 公共仓库发布状态。具体部署固定所取得分发物 |
+| [Node RPC 入口](https://github.com/d7z-team/go-mini/blob/295eb19d74305bd39c3ddf0fa88e01c52fdc446b/playground/runtime-rust/runtime-wasm/sdk/node-rpc.ts)、[Worker](https://github.com/d7z-team/go-mini/blob/295eb19d74305bd39c3ddf0fa88e01c52fdc446b/playground/runtime-rust/runtime-wasm/sdk/node-rpc-worker.ts)、[网络适配](https://github.com/d7z-team/go-mini/blob/295eb19d74305bd39c3ddf0fa88e01c52fdc446b/playground/runtime-rust/runtime-wasm/sdk/rpc-network.ts)：Worker 加载 WASM RPC Endpoint，经 WebSocket 建立连接 | Node 能直接调用／发布服务，不需 Mini-Go Program；仍须分发 SDK 的 Worker／WASM 资源。未由此确认 Node RPC 支持 Unix socket，也不把 Worker 当完整沙箱 |
+| RPC 指南及[RPC 类型](https://github.com/d7z-team/go-mini/blob/295eb19d74305bd39c3ddf0fa88e01c52fdc446b/playground/runtime-rust/runtime-wasm/sdk/rpc-types.ts)、[连接实现](https://github.com/d7z-team/go-mini/blob/295eb19d74305bd39c3ddf0fa88e01c52fdc446b/playground/runtime-rust/runtime-wasm/sdk/rpc-runtime.ts)：显式 timeoutMs／AbortSignal，close 与 terminate 分开；断线结束待处理工作，资源失效后重新连接并绑定 | 宿主提供期限并保留操作事实；取消等待或终止 Worker 不证明处理函数／外部动作已停止，不自动重试不明动作 |
 | RPC 指南：64 位整数为 bigint，字节为 Uint8Array 或 null，optional 为 undefined，map 为 Map；资源保留原 binding 归属 | 使用生成类型及资源客户端，不以普通 JSON 序列化代替 wire 契约；字段到表单或模型可见表示的转换仍由宿主适配 |
-| [Node 测试源码](../../go-mini/playground/runtime-rust/runtime-wasm/tests/node.test.js)含生成 TypeScript RPC 与 Go 双向互通用例 | 表明库已有对应测试场景；本次仅阅读，不声称该用例已在本环境运行或 TinyAGI 已完成 Node 接入 |
+| [Node 测试源码](https://github.com/d7z-team/go-mini/blob/295eb19d74305bd39c3ddf0fa88e01c52fdc446b/playground/runtime-rust/runtime-wasm/tests/node.test.js)含生成 TypeScript RPC 与 Go 双向互通用例 | 表明库已有对应测试场景；证据为测试源码阅读，不代表本项目已运行该用例或完成 Node 接入 |
 
 该快照支持将能力端扩充为 Go／Rust／Node.js（npm），同时保留 Mini-Go 脚本编排及已有宿主接入。工程装配、依赖产物和生命周期见[Node 接入](engineering-reference.md#node-rpc-integration)；宿主管理 Node 服务仍属待实现设计，旧实验成绩不外推到新增路径。
 
@@ -143,14 +121,14 @@ git -C ../go-mini show 295eb19d74305bd39c3ddf0fa88e01c52fdc446b:RPC.md
 
 ### 弃用信息、源码分发与初始化接入依据
 
-2026-09-21 只读核对相邻仓库提交 `a0d1558571159cb017d12e4a0a4c1cbf795f8b9a`，工作区无修改；未运行生成、编译、实例或测试。本记录补充下列事实，不重写早期库快照与实验结论。
+2026-09-21 只读核对go-mini 提交 `a0d1558571159cb017d12e4a0a4c1cbf795f8b9a`；未运行生成、编译、实例或测试。本记录补充下列事实，不重写早期库快照与实验结论。
 
 | 已确认事实 | 来源与适用边界 |
 | --- | --- |
-| 文档提取识别以 `Deprecated:` 开始的段落 | [comments.go](../../go-mini/compiler/doc/comments.go) 的 `deprecatedText`；[model.go](../../go-mini/compiler/doc/model.go) 的 `Symbol.Deprecated`；[extract.go](../../go-mini/compiler/doc/extract.go) 将弃用信息写入符号文档。可复用来显示迁移提示，不等于编译器已拒绝弃用调用或自动生成兼容实现 |
-| 宿主可注册模块源码 | [USAGE.md](../../go-mini/USAGE.md) 的 `NewStandardLibrary`、`NewModuleLibrary`、`NewLibrarySet` 与 `Config.Libraries`；逻辑导入前缀和提供的 FS 决定依赖装配，使用期间源码 FS 须保持不变 |
+| 文档提取识别以 `Deprecated:` 开始的段落 | [comments.go](https://github.com/d7z-team/go-mini/blob/a0d1558571159cb017d12e4a0a4c1cbf795f8b9a/compiler/doc/comments.go) 的 `deprecatedText`；[model.go](https://github.com/d7z-team/go-mini/blob/a0d1558571159cb017d12e4a0a4c1cbf795f8b9a/compiler/doc/model.go) 的 `Symbol.Deprecated`；[extract.go](https://github.com/d7z-team/go-mini/blob/a0d1558571159cb017d12e4a0a4c1cbf795f8b9a/compiler/doc/extract.go) 将弃用信息写入符号文档。可复用来显示迁移提示，不等于编译器已拒绝弃用调用或自动生成兼容实现 |
+| 宿主可注册模块源码 | [USAGE.md](https://github.com/d7z-team/go-mini/blob/a0d1558571159cb017d12e4a0a4c1cbf795f8b9a/USAGE.md) 的 `NewStandardLibrary`、`NewModuleLibrary`、`NewLibrarySet` 与 `Config.Libraries`；逻辑导入前缀和提供的 FS 决定依赖装配，使用期间源码 FS 须保持不变 |
 | 检查、编译、实例与命名调用可分开组织 | 同一指南及[已有读取记录](#rpc-extension-facts)；能支持宿主引导器编译候选、创建独立实例，不表示已有 TinyAGI 人物生成／迁移流程 |
-| 源码、资源和 `.mrpc` 声明是分发边界 | [ARCHITECTURE.md](../../go-mini/ARCHITECTURE.md) 的“编译、链接与派生物”；执行镜像、生成绑定、缓存等属于当前工具链派生物，不能将旧缓存当作跨客户端可启动保证 |
+| 源码、资源和 `.mrpc` 声明是分发边界 | [ARCHITECTURE.md](https://github.com/d7z-team/go-mini/blob/a0d1558571159cb017d12e4a0a4c1cbf795f8b9a/ARCHITECTURE.md) 的“编译、链接与派生物”；执行镜像、生成绑定、缓存等属于当前工具链派生物，不能将旧缓存当作跨客户端可启动保证 |
 | 程序比较与补丁适用范围有限 | [基础读取记录](#library-facts)的 ComparePrograms／PreparePatch 处理程序结构与运行补丁；不能单独证明宿主接口语义、业务数据或整个客户端升级兼容 |
 
 本次源码与文档阅读未确认现成的“按 API 修订保留旧实现、自动迁移人格程序、完整调用点弃用告警”服务。上述是 TinyAGI 待实现的宿主设计，不能把文档字段或单个编译 API 记作完整能力已具备。
@@ -159,9 +137,9 @@ git -C ../go-mini show 295eb19d74305bd39c3ddf0fa88e01c52fdc446b:RPC.md
 
 ### 预制源码库、宿主装配与工具接入依据
 
-2026-09-21 只读核对提交 `a0d1558571159cb017d12e4a0a4c1cbf795f8b9a`，未修改相邻仓库或运行编译／测试。[USAGE.md](../../go-mini/USAGE.md)说明 Engine 自动提供标准库源码，额外模块通过 NewStandardLibrary／NewModuleLibrary／NewLibrarySet 注册；宿主提供源码集合，compiler 按 import 选择依赖，使用期间库 FS 保持不变。系统能力仍需显式装配 provider。这支持“预制源码与运行能力分别提供”的工程分工。
+2026-09-21 只读核对提交 `a0d1558571159cb017d12e4a0a4c1cbf795f8b9a`，未运行编译或测试。[USAGE.md](https://github.com/d7z-team/go-mini/blob/a0d1558571159cb017d12e4a0a4c1cbf795f8b9a/USAGE.md)说明 Engine 自动提供标准库源码，额外模块通过 NewStandardLibrary／NewModuleLibrary／NewLibrarySet 注册；宿主提供源码集合，compiler 按 import 选择依赖，使用期间库 FS 保持不变。系统能力仍需显式装配 provider。这支持“预制源码与运行能力分别提供”的工程分工。
 
-同一指南说明 Go 应用可使用 compiler/language 查询语言信息，compiler/service.Session 管理分析和构建；[symbols.go](../../go-mini/compiler/language/symbols.go)提供 DocumentSymbols／WorkspaceSymbols。[既有记录](#deprecation-facts)另确认文档提取、Check 及派生物边界。可据此设计源码结构、文档和诊断适配，不将工具存在解释为 TinyAGI 已实现完整能力库或初始化保证。
+同一指南说明 Go 应用可使用 compiler/language 查询语言信息，compiler/service.Session 管理分析和构建；[symbols.go](https://github.com/d7z-team/go-mini/blob/a0d1558571159cb017d12e4a0a4c1cbf795f8b9a/compiler/language/symbols.go)提供 DocumentSymbols／WorkspaceSymbols。[既有记录](#deprecation-facts)另确认文档提取、Check 及派生物边界。可据此设计源码结构、文档和诊断适配，不将工具存在解释为 TinyAGI 已实现完整能力库或初始化保证。
 
 TinyAGI 的预制命名空间保护、客户端发布身份、个体包装区分、工具权限和投影过滤由宿主补充。语言标准库、TinyAGI 预制能力及 Self 个体程序各有维护来源；预制操作复用 MRPC／Host 及原状态所有者，客户端升级维护权威实现，个体可选用并按兼容规则迁移。详细[工程映射](engineering-reference.md#client-library)与[逻辑契约](runtime-protocol.md#prebuilt-library)分别维护。
 
@@ -179,17 +157,17 @@ Go 宿主先登记稳定人物身份、有效程序及引导进度，再用既�
 
 ### 任务执行、前台入口与控制的固定提交核对
 
-2026-09-21 只读核对提交 `a0d1558571159cb017d12e4a0a4c1cbf795f8b9a` 的文档、实现及测试源码，未运行库测试、产品程序或新实验。以下测试名表示已阅读的用例，不表示本轮实测通过。
+2026-09-21 只读核对提交 `a0d1558571159cb017d12e4a0a4c1cbf795f8b9a` 的文档、实现及测试源码，未运行库测试、产品程序或新实验。以下测试名表示已阅读的用例，不表示测试已实际运行。
 
 | 库事实 | 来源及宿主适用边界 |
 | --- | --- |
-| Start 遇到活跃前台 Execution／foreground 会拒绝新入口 | [instance_call.go](../../go-mini/runtime/instance_call.go) 的 start；Pending 不等于前台已释放，不能依赖异步 FFI 自动接纳另一前台调用 |
-| PollSteps 有本次推进额度，Ready 可唤醒；累计限制保持 | [execution.go](../../go-mini/runtime/execution.go)、[execution_poll_steps_test.go](../../go-mini/runtime/execution_poll_steps_test.go)；让出 worker 与结束业务执行分别处理，步数非墙钟保证 |
-| Wait 的 context 取消请求取消执行；WaitScope 只限制等待 | [execution.go](../../go-mini/runtime/execution.go) 的 waitValues、[execution_scope.go](../../go-mini/runtime/execution_scope.go)；ScopeDone 等待该调用的 task、timer 及 FFI 收束，不代表远端业务效果消失 |
-| InterruptHandle 绑定 Execution，Interrupt 调用 requestCancel | [execution.go](../../go-mini/runtime/execution.go)；Cancel 取得 VM owner 处理控制，Interrupt 仅提交请求；[scheduler_lifecycle_test.go](../../go-mini/runtime/scheduler_lifecycle_test.go) 的 TestInterruptHandleOnlyCancelsItsExecution 检查旧句柄不取消新执行 |
-| scope 取消与实例故障边界不同 | 同一测试文件的 TestCancelOneBackgroundScopeKeepsOtherScope、TestLibraryBackgroundPanicFaultsInstance；[vm_error_limits_test.go](../../go-mini/runtime/vm_error_limits_test.go) 的 TestVMEnforcesStepLimitInsideLoopAndKeepsLibraryOpen。library scope 步数限制可局部结束，未恢复后台 panic 可使实例失败，scope 不是全部故障的隔离边界 |
-| 普通入口与 main 的生命周期不同 | [USAGE.md](../../go-mini/USAGE.md) 的入口表；main 返回会结束实例其余任务，普通入口返回与 scope 完成分开 |
-| FFI 回调须快速且不可同步重入同实例，RPC 长任务需配合取消 | [USAGE.md](../../go-mini/USAGE.md)、[ARCHITECTURE.md](../../go-mini/ARCHITECTURE.md)、[RPC.md](../../go-mini/RPC.md)；阻塞工作在提供者有界执行器中运行，宿主仍承担实际资源清理与停止核对 |
+| Start 遇到活跃前台 Execution／foreground 会拒绝新入口 | [instance_call.go](https://github.com/d7z-team/go-mini/blob/a0d1558571159cb017d12e4a0a4c1cbf795f8b9a/runtime/instance_call.go) 的 start；Pending 不等于前台已释放，不能依赖异步 FFI 自动接纳另一前台调用 |
+| PollSteps 有本次推进额度，Ready 可唤醒；累计限制保持 | [execution.go](https://github.com/d7z-team/go-mini/blob/a0d1558571159cb017d12e4a0a4c1cbf795f8b9a/runtime/execution.go)、[execution_poll_steps_test.go](https://github.com/d7z-team/go-mini/blob/a0d1558571159cb017d12e4a0a4c1cbf795f8b9a/runtime/execution_poll_steps_test.go)；让出 worker 与结束业务执行分别处理，步数非墙钟保证 |
+| Wait 的 context 取消请求取消执行；WaitScope 只限制等待 | [execution.go](https://github.com/d7z-team/go-mini/blob/a0d1558571159cb017d12e4a0a4c1cbf795f8b9a/runtime/execution.go) 的 waitValues、[execution_scope.go](https://github.com/d7z-team/go-mini/blob/a0d1558571159cb017d12e4a0a4c1cbf795f8b9a/runtime/execution_scope.go)；ScopeDone 等待该调用的 task、timer 及 FFI 收束，不代表远端业务效果消失 |
+| InterruptHandle 绑定 Execution，Interrupt 调用 requestCancel | [execution.go](https://github.com/d7z-team/go-mini/blob/a0d1558571159cb017d12e4a0a4c1cbf795f8b9a/runtime/execution.go)；Cancel 取得 VM owner 处理控制，Interrupt 仅提交请求；[scheduler_lifecycle_test.go](https://github.com/d7z-team/go-mini/blob/a0d1558571159cb017d12e4a0a4c1cbf795f8b9a/runtime/scheduler_lifecycle_test.go) 的 TestInterruptHandleOnlyCancelsItsExecution 检查旧句柄不取消新执行 |
+| scope 取消与实例故障边界不同 | 同一测试文件的 TestCancelOneBackgroundScopeKeepsOtherScope、TestLibraryBackgroundPanicFaultsInstance；[vm_error_limits_test.go](https://github.com/d7z-team/go-mini/blob/a0d1558571159cb017d12e4a0a4c1cbf795f8b9a/runtime/vm_error_limits_test.go) 的 TestVMEnforcesStepLimitInsideLoopAndKeepsLibraryOpen。library scope 步数限制可局部结束，未恢复后台 panic 可使实例失败，scope 不是全部故障的隔离边界 |
+| 普通入口与 main 的生命周期不同 | [USAGE.md](https://github.com/d7z-team/go-mini/blob/a0d1558571159cb017d12e4a0a4c1cbf795f8b9a/USAGE.md) 的入口表；main 返回会结束实例其余任务，普通入口返回与 scope 完成分开 |
+| FFI 回调须快速且不可同步重入同实例，RPC 长任务需配合取消 | [USAGE.md](https://github.com/d7z-team/go-mini/blob/a0d1558571159cb017d12e4a0a4c1cbf795f8b9a/USAGE.md)、[ARCHITECTURE.md](https://github.com/d7z-team/go-mini/blob/a0d1558571159cb017d12e4a0a4c1cbf795f8b9a/ARCHITECTURE.md)、[RPC.md](https://github.com/d7z-team/go-mini/blob/a0d1558571159cb017d12e4a0a4c1cbf795f8b9a/RPC.md)；阻塞工作在提供者有界执行器中运行，宿主仍承担实际资源清理与停止核对 |
 
 任务标识到执行／子工作映射、控制来源授权、继续推进资格、阻断解除及迟到结果处理属于 TinyAGI 宿主设计。库接口不直接提供业务任务控制面，也不证明主体持续响应已经端到端验证。接入见[工程参考](engineering-reference.md#task-execution)，逻辑见[任务控制](runtime-protocol.md#task-control)。
 
@@ -209,13 +187,13 @@ Go 宿主先登记稳定人物身份、有效程序及引导进度，再用既�
 
 生产认知实例只装配受控的 TinyAGI 宿主接口，不注入可绕过动作登记的通用文件、Shell、网络 provider 或任意远程路由 fallback。实际执行能力由 Go 操作模块按范围委托给受控提供者；凭据由宿主保管并按用途交受信适配器或原生服务使用，原值不回传认知；协议内填写目标地址不能自动获得新的访问范围。
 
-实际 Go module path 是 `github.com/d7z-team/mini-go`，不同于仓库目录名 `go-mini`。根项目 `go.mod` 保持不变；研究模块通过独立 go.mod 固定源码身份；宿主组合实验从相邻仓库导出已提交快照到临时构建目录。旧实验保留原依赖方式及条件，不能由其相对路径推断今天重跑仍使用原版本。
+go-mini 的 Go module path 为 `github.com/d7z-team/mini-go`，与仓库名称不同。实验通过固定源码提交确定依赖版本，复现实验或准备接入时应使用报告注明的版本。
 
 <a id="active-learning-adapter"></a>
 
 ### 主动学习策略与宿主接入
 
-主动学习模块按受管理编写契约提供选题、实践、结果解释和策略候选入口，使用已记录的命名调用、独立实例、MRPC 与补丁机制。库只承担执行、调用和资源生命周期；学习活动来源、强度及自动采用资格由 TinyAGI 宿主判定，不将它们记录为 go-mini 已有 API。库事实继续采用上方固定提交读取记录，本轮没有新增库实验。
+主动学习模块按受管理编写契约提供选题、实践、结果解释和策略候选入口，使用已记录的命名调用、独立实例、MRPC 与补丁机制。库只承担执行、调用和资源生命周期；学习活动来源、强度及自动采用资格由 TinyAGI 宿主判定，不将它们记录为 go-mini 已有 API。库事实继续采用上方固定提交读取记录，上述接入方式尚无新增库实验结果。
 
 学习强度最低为关闭。宿主在创建／接续学习执行、接纳下属工作及自动采用之前核对当前强度；不能仅让脚本在入口自行判断，也不能从同一 Program 新建 Instance 获得新额度。关闭时取消或收束所属工作，等待和回收行为遵循库原契约，不把 Cancel 返回或入口结束当成所有后台资源已经关闭。
 
@@ -242,7 +220,7 @@ RunSegment:
 
 步骤内操作接纳与最终状态提交分别沿[运行契约](runtime-protocol.md#step-operation-admission)处理；Commit 关联已有操作并接纳尚未提交的意图，不重复派发。最终步骤被撤销不抹去独立操作；是否继续或停止由带目标范围的当前控制决定。
 
-分段采用 library 入口承载一次运行段。`Step` 及其调用图包含可变认知逻辑，外层循环只调度上下文和提交。按已认可编写契约采用有可结束边界的调用，跨调用进度由宿主保存；长驻旧根循环不作为默认，尚无分段成本或认知连续性收益实测。长期任务的事实状态仍独立于 VM scope。
+分段采用 library 入口承载一次运行段。`Step` 及其调用图包含可变认知逻辑，外层循环只调度上下文和提交。按编写契约采用有可结束边界的调用，跨调用进度由宿主保存；长驻旧根循环不作为默认，尚无分段成本或认知连续性收益实测。长期任务的事实状态仍独立于 VM scope。
 
 宿主在步骤边界结束分段，等待入口及该分段所属局部 scope 收束，再重入 library 入口；长任务由宿主 Operation 独立管理，不在此等待整项任务结束。连续性取决于所保留的状态是否完整，不能由重入动作本身保证。需要回收 globals 或彻底释放旧实例资源时，可以研究关闭实例后从持久状态新建的方案。
 
@@ -257,7 +235,7 @@ RunSegment:
 
 配额对照确认新 scope 获得独立预算，热更新不重置旧 scope 计数。宿主还需维护跨分段的活动预算，并单独考虑标准库初始化成本；真实模型／工具的计量仍待接入，不能把反复重入视为活动预算刷新。宿主组合实验已在两段新实例之间保留累计夹具调用数，未测试预算耗尽或真实 token／费用。
 
-既有实验曾比较不同后台状态约束，证据按原范围保留。当前用户认可的编写契约要求跨调用工作通过宿主 Operation／事件接续，局部闭包和内部任务不越过调用生命周期；该选择来自当前规范，不作为旧实验已经证明的最优方案。
+既有实验曾比较不同后台状态约束，证据按原范围保留。当前设计要求的编写契约要求跨调用工作通过宿主 Operation／事件接续，局部闭包和内部任务不越过调用生命周期；该选择来自当前规范，不作为旧实验已经证明的最优方案。
 
 <a id="patch"></a>
 
@@ -267,9 +245,9 @@ RunSegment:
 
 同一心智一次只接纳一个部署操作。准备候选程序和影子验证可以在独立实例中进行，不占用生产认知步骤。
 
-主体自主采用前，候选须在拟采用用途下满足[能力与回归门槛](sandbox-evaluation.md#regression-gates)，报告关联程序、宿主、模型、提示、材料及评价配置。编译、`ComparePrograms` 和补丁兼容检查只回答结构问题，不代替完整任务比较；证据不足时保留候选，沿用现有配置。通过测试形成自主采用依据；人工管理提交按已认可的[生效契约](management-workspace.md#apply)完成结构、授权与切换核对，不把完整实验作为每次提交的强制前置。
+主体自主采用前，候选须在拟采用用途下满足[能力与回归门槛](sandbox-evaluation.md#regression-gates)，报告关联程序、宿主、模型、提示、材料及评价配置。编译、`ComparePrograms` 和补丁兼容检查只回答结构问题，不代替完整任务比较；证据不足时保留候选，沿用现有配置。通过测试形成自主采用依据；人工管理提交按既定的[生效契约](management-workspace.md#apply)完成结构、授权与切换核对，不把完整实验作为每次提交的强制前置。
 
-对应已认可调用边界契约的库接入流程：
+对应调用边界契约的库接入流程：
 
 1. 保存源码、类型与注释描述、配置、生成适配及 Program 身份，检查编写规范；自主采用时另关联相应用途的验证报告。
 2. 使用 `ComparePrograms` 查看差异，检查实际授权需求；能力声明变少不能直接证明风险降低。

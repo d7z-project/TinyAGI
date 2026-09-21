@@ -1,6 +1,6 @@
-# S1a：SQLite、本地文件与维护边界
+# 报告 010 · SQLite、本地文件与维护边界
 
-[文档索引](../README.md#experiments) · [总体设计](../../DESIGN.md#storage) · [存储方案](../storage-options.md) · [研究状态](../research-plan.md#s1a)
+[文档索引](../README.md#experiments) · [总体设计](../../DESIGN.md#storage) · [存储方案](../engineering-reference.md#persistence) · [研究状态](../research-plan.md#remaining-questions)
 
 日期：2026-09-19。设计阶段的独立机制实验，非产品实现、模型实验或掉电测试。
 
@@ -10,13 +10,13 @@
 
 ## 1. 条件与执行
 
-上一轮 DESIGN v3.0 已固定单机、单二进制、SQLite 与本地文件；本轮先维护总设计，再固定[22 例预登记](../../experiments/local-storage/README.md)，编写[独立脚本](../../experiments/local-storage/experiment.py)并执行一次。无结果后修订或重跑。
+本实验在单机、SQLite 与本地文件条件下，预登记 22 例，编写独立脚本并执行一次。未在查看结果后修订条件或重跑。
 
 环境为 Linux 6.18.52、XFS、Python 3.14.7、SQLite 3.53.4；实验临时目录位于仓库所在文件系统，未使用 `/tmp` 的 tmpfs。SQLite 使用 WAL、FULL；自动 checkpoint 关闭、busy timeout 为 0，以确定观察竞争和 WAL 行为。这些是实验参数，不能直接当产品配置。
 
 夹具包含主体计数、输入消费、唯一提交键、文件引用及 queued 操作。固定文件 65,536 字节，经临时写、文件同步、排他 hard link 发布、目录同步，再提交 SQLite 引用与业务状态。子进程只模拟宿主在不同阶段终止，线程模拟进程内发布、读取与维护，并不重新引入多进程产品架构。
 
-**22 例符合预登记判据，174 项显式检查通过，13 个子进程、8 次有意 SIGKILL，失败检查和异常兜底强杀均为 0。** 其中包含预期会失败的错误设计对照；“通过”表示观察符合预登记，不表示所有被测方案均正确。检查数不是独立样本数或故障概率。[原始 JSON](../../experiments/results/local-storage.json)保存条件、屏障、退出码、SQL 终态、文件摘要与错误码。
+**22 例符合预登记判据，174 项显式检查通过，13 个子进程、8 次有意 SIGKILL，失败检查和异常兜底强杀均为 0。** 其中包含预期会失败的错误设计对照；“通过”表示观察符合预登记，不表示所有被测方案均正确。检查数不是独立样本数或故障概率。原始 JSON 保存条件、屏障、退出码、SQL 终态、文件摘要与错误码。
 
 本实验没有调用模型、推进 go-mini、执行现实工具动作或测量真实业务吞吐；它覆盖 S1 的存储与维护子集，没有完成整个认知工作闭环。
 
@@ -47,7 +47,7 @@
 | T2 两个写者 | 第二个 BEGIN IMMEDIATE 得到 SQLITE_BUSY（5）；前者结束后第二个能推进 | 写入通路应串行调度，有界处理竞争 |
 | T3 长读与 checkpoint | 32 次更新后 checkpoint 为 `[0,64,0]`，WAL 263,712 字节；读事务结束后为 `[0,0,0]`，WAL 截断至 0 | 不跨模型等待持有读事务；观察 WAL 增长及未结束读者 |
 
-F3 的文件在 SIGKILL 后可见不证明目录同步可省略：内核和磁盘环境未重启。T3 的页数、文件大小和 32 次更新是本次夹具参数，不是吞吐或容量阈值。
+F3 的文件在 SIGKILL 后可见不证明目录同步可省略：内核和磁盘环境未重启。T3 的页数、文件大小和 32 次更新是本实验夹具参数，不是吞吐或容量阈值。
 
 <a id="decisions"></a>
 
@@ -57,9 +57,9 @@ F3 的文件在 SIGKILL 后可见不证明目录同步可省略：内核和磁�
 2. **文件先发布，引用后提交。** 文件就绪后以短 SQLite 事务共同保存必要状态和待办；提交后才确认，确认丢失查原键。文件失败不提交引用，孤立文件由维护处理。
 3. **维护统一关闭准入再排空。** 发布者持有维护资格直至引用事务成功或明确放弃；清理等待相关读者结束。备份、删除与回收共用此边界，不能只锁文件 rename 或只查数据库引用。
 4. **备份必须校验闭包。** 使用 backup API，固定其引用的文件集合，复制并校验数据库和文件后发布完成清单；恢复重新检查清单及内容，不能只看一个标记。
-5. **明确 SQLite 事务生命周期。** 上下文读取结束就释放快照；计算完成后以 BEGIN IMMEDIATE 开始短写事务并复核条件。BUSY_SNAPSHOT 需回滚重读；普通写入竞争有界重试，仍用原业务键。不从本次 busy=0 或关闭自动 checkpoint 推出产品调优参数。
+5. **明确 SQLite 事务生命周期。** 上下文读取结束就释放快照；计算完成后以 BEGIN IMMEDIATE 开始短写事务并复核条件。BUSY_SNAPSHOT 需回滚重读；普通写入竞争有界重试，仍用原业务键。不从本实验 busy=0 或关闭自动 checkpoint 推出产品调优参数。
 
-这些机制已回写当前总设计及协议。Go 驱动、跨平台发布方式、吞吐曲线、真实磁盘错误与备份停顿仍未确定。
+Go 驱动、跨平台发布方式、吞吐曲线、真实磁盘错误与备份停顿仍未确定。
 
 <a id="limits"></a>
 
@@ -70,7 +70,7 @@ F3 的文件在 SIGKILL 后可见不证明目录同步可省略：内核和磁�
 | 未完全实测的命题 | 一手依据 | 设计推论与剩余验证 |
 | --- | --- | --- |
 | 进程终止后锁是否一定释放 | [Linux flock](https://man7.org/linux/man-pages/man2/flock.2.html) | 锁关联打开的文件描述，fork／dup 的副本会影响释放；避免继承锁描述符。L1 未测试完整子进程继承树或恶意忽略 advisory lock |
-| fsync／发布能否保证掉电后文件可恢复 | [Linux fsync](https://man7.org/linux/man-pages/man2/fsync.2.html)、[link](https://man7.org/linux/man-pages/man2/link.2.html)、[SQLite atomic commit](https://www.sqlite.org/atomiccommit.html) | 文件、目录及存储刷新契约均重要；本次未掉电，也未验证新建数据／备份目录的全部祖先项持久化 |
+| fsync／发布能否保证掉电后文件可恢复 | [Linux fsync](https://man7.org/linux/man-pages/man2/fsync.2.html)、[link](https://man7.org/linux/man-pages/man2/link.2.html)、[SQLite atomic commit](https://www.sqlite.org/atomiccommit.html) | 文件、目录及存储刷新契约均重要；本实验未掉电，也未验证新建数据／备份目录的全部祖先项持久化 |
 | 长读快照能否等待后继续升级 | [SQLite isolation](https://www.sqlite.org/isolation.html)、[事务文档](https://www.sqlite.org/lang_transaction.html) | 结束旧快照并重建写事务；T1/T2 支持局部行为，Go 驱动中的错误与事务状态处理仍待测 |
 | WAL 和备份文件能否任意复制或移动 | [SQLite WAL](https://www.sqlite.org/wal.html)、[backup API](https://www.sqlite.org/backup.html)、[文件损坏原因](https://www.sqlite.org/howtocorrupt.html) | 不单独操作活跃数据库文件或其日志；完整备份须包括外部内容，副本恢复步骤另行校验 |
 
@@ -80,8 +80,6 @@ F3 的文件在 SIGKILL 后可见不证明目录同步可省略：内核和磁�
 
 <a id="reproduce"></a>
 
-## 5. 复现与哈希
-
 运行命令见预登记，输出排他创建，复跑须更换路径。原 E0～E8e 记录未修改。
 
 | 文件 | SHA-256 |
@@ -89,3 +87,7 @@ F3 的文件在 SIGKILL 后可见不证明目录同步可省略：内核和磁�
 | 预登记 README.md | `9c79ab6a8a63a16d770aa146ad1411983780f6ec8a8f024bd6c3c0b5ea129c77` |
 | experiment.py | `039e149ae1c9b1d92fff65e6263628149cfd534372b5cef1000a091c63db5569` |
 | local-storage.json | `be742366fb84ee31c070c6899637bdc09936a2999111fa82af7b6430f6d9bd9a` |
+
+## 数据可用性
+
+本报告公开实验条件、汇总统计和失败分析。原始输入、脚本及逐次运行记录未随报告发布，因此不能仅凭本文独立复现实验。

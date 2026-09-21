@@ -1,22 +1,22 @@
-# E8c：提供者核对、取消与回收
+# 报告 007 · 提供者核对、取消与回收
 
-[文档索引](../README.md#experiments) · [总体设计](../../DESIGN.md#effects) · [研究状态](../research-plan.md#e8c)
+[文档索引](../README.md#experiments) · [总体设计](../../DESIGN.md#effects) · [研究状态](../research-plan.md#remaining-questions)
 
 日期：2026-09-19。证据类型：受控子进程与本地持久化实验；不是网络、Kubernetes 或设备实测。
 
 ## 1. 问题与实验条件
 
-E0/E8b 已说明效果与回执分离会产生 unknown。本轮检查恢复时怎样处理缺失查询、迟到接纳、去重记录过期，以及取消、退出和效果判定之间的关系。
+E0/E8b 已说明效果与回执分离会产生 unknown。本实验检查恢复时怎样处理缺失查询、迟到接纳、去重记录过期，以及取消、退出和效果判定之间的关系。
 
-执行前固定了[12 个场景](../../experiments/provider-reconciliation/README.md)。[实验脚本](../../experiments/provider-reconciliation/experiment.py)只使用 Python 标准库；父进程驱动提供者接纳与恢复策略，实际效果由独立工作进程写入 world 数据库。provider 数据库另存接纳与回执，二者各自 SQLite WAL／FULL，没有共同事务。管道屏障固定效果前和效果后、终态前两个切点。
+执行前固定了12 个场景。实验脚本只使用 Python 标准库；父进程驱动提供者接纳与恢复策略，实际效果由独立工作进程写入 world 数据库。provider 数据库另存接纳与回执，二者各自 SQLite WAL／FULL，没有共同事务。管道屏障固定效果前和效果后、终态前两个切点。
 
-环境为 Python 3.14.7、SQLite 3.53.4。网络套接字创建被沙箱以 EPERM 拒绝，未发现 kubectl／kind／minikube／k3d 或 NVIDIA 工具及设备节点，因此改用管道；完整[探测记录](../../experiments/results/provider-reconciliation-environment.json)保留。最初探测脚本在 socket 构造处提前退出，随后仅修正探测的异常捕获并完成记录；未执行网络实验，也未连接已有集群。
+环境为 Python 3.14.7、SQLite 3.53.4。网络套接字创建被沙箱以 EPERM 拒绝，未发现 kubectl／kind／minikube／k3d 或 NVIDIA 工具及设备节点，因此改用管道；完整探测记录保留。最初探测脚本在 socket 构造处提前退出，随后仅修正探测的异常捕获并完成记录；未执行网络实验，也未连接已有集群。
 
 恢复策略只读取 provider 记录；world 表仅用于事后评分。取消是否合作、键是否保留和是否支持原子关闭均为显式实验变量，不假装所有服务具有这些能力。效果缺失回执通过屏障保留，未注入真实网络丢包。
 
 ## 2. 结果
 
-一次完整执行包含 **12 例、15 个工作子进程、2 次 SIGKILL、107 项断言，实验错误 0**。断言包括屏障、退出和预期反例，107 不是独立样本数量。各场景为确定次序，无概率或性能推断；完整[逐事件结果](../../experiments/results/provider-reconciliation.json)包含全部决策、查询及效果真值。
+一次完整执行包含 **12 例、15 个工作子进程、2 次 SIGKILL、107 项断言，实验错误 0**。断言包括屏障、退出和预期反例，107 不是独立样本数量。各场景为确定次序，无概率或性能推断；完整逐事件结果包含全部决策、查询及效果真值。
 
 | 场景 | 实测结果 | 可以据此修订的设计 |
 | --- | --- | --- |
@@ -47,11 +47,9 @@ D 测量的是实际存活且占用实验席位的工作进程，不是 GPU kern
 - **保留业务键及保留边界。** 同键绑定参数，超过保证窗口停止自动重投；自主提供者可研究墓碑或过期拒绝。外部服务无此能力时保留 unknown，不以新键绕过。
 - **明确等待的终点。** 核对有预算、下次时间及负责人；耗尽核对预算进入待处置状态，不自动改成成功、未发生或释放全部责任。新行动或补偿是新决策，旧证据保留。
 
-平台与 GPU 的具体适配由[一手资料论证](../platform-evidence.md)补充。资料能排除不成立的保证，不能替代真实集群和显卡验证。
+平台与 GPU 的具体适配由[一手资料论证](../engineering-reference.md#physical-architecture)补充。资料能排除不成立的保证，不能替代真实集群和显卡验证。
 
-## 5. 可复核性
-
-运行命令：`python3 experiments/provider-reconciliation/experiment.py --output experiments/results/provider-reconciliation.json`。脚本拒绝覆盖已有输出，复跑应换路径。预登记与脚本在本次执行后保持不变；实验首次完整运行通过，无实验失败被覆盖。
+运行命令：`python3 experiments/provider-reconciliation/experiment.py --output experiments/results/provider-reconciliation.json`。脚本拒绝覆盖已有输出，复跑应换路径。预登记与脚本在本实验执行后保持不变；实验首次完整运行通过，无实验失败被覆盖。
 
 | 材料 | SHA-256 |
 | --- | --- |
@@ -60,3 +58,7 @@ D 测量的是实际存活且占用实验席位的工作进程，不是 GPU kern
 | provider-reconciliation.json | `4691eefcae437d9c40f09cf2a6a78e124dcdec2858ef617ad8083ccaa7b47027` |
 
 临时数据库用于独立场景，结束后清理；效果行、查询、屏障、进程退出码已保存到原始 JSON。既有 E0～E8b 的脚本与数据未修改。
+
+## 数据可用性
+
+本报告公开实验条件、汇总统计和失败分析。原始输入、脚本及逐次运行记录未随报告发布，因此不能仅凭本文独立复现实验。

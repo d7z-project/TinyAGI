@@ -4,22 +4,25 @@
 
 [项目入口](../README.md) · [文档索引](README.md) · [逻辑总设计](../DESIGN.md) · [逻辑契约](runtime-protocol.md) · [go-mini 库行为](go-mini-integration.md)
 
-本文保存已讨论的物理部署、软件依赖、技术栈、存储机制、选型理由和证据边界。它们是逻辑职责的工程映射，不反向规定 Mind、活动或能力必须对应何种进程。选择依据与验证边界分别记录；设计状态统一见[台账](research-plan.md#research-status)。
+本文说明物理部署、软件依赖、技术栈和存储机制，并记录选型理由与证据边界。工程组件承载逻辑职责，但 Mind、活动和能力不必各自对应一个进程。方案设计范围统一见[设计台账](research-plan.md#research-status)。
 
-目录：[物理部署](#physical-architecture) · [软件依赖](#software-modules) · [技术栈](#technology-stack) · [提示词初始化与兼容](#prompt-bootstrap) · [客户端预制能力库](#client-library) · [任务执行与控制](#task-execution) · [热加载生成工具](#managed-function-tooling) · [能力工具链与运行](#capability-toolchain)／[Node.js 与 npm](#node-rpc-integration) · [主动学习接入](#active-learning-integration) · [向量服务](#vector-service) · [存储机制](#persistence)／[个体状态](#individual-state-storage) · [实现准入](#implementation-admission) · [库接入](#vm-deployment) · [一手依据](#stack-sources) · [向量资料](#vector-sources)
+| 阅读主题 | 章节入口 |
+| --- | --- |
+| 总体承载 | [物理部署](#physical-architecture) · [软件依赖](#software-modules) · [技术栈](#technology-stack) |
+| 主体与执行 | [初始化与兼容](#prompt-bootstrap) · [预制能力库](#client-library) · [任务控制](#task-execution) · [热加载工具](#managed-function-tooling) |
+| 能力扩展 | [工具链与运行](#capability-toolchain) · [Node.js 与 npm](#node-rpc-integration) · [主动学习](#active-learning-integration) · [实现准入](#implementation-admission) |
+| 数据与服务 | [模型维护与机密](#maintenance-secrets) · [向量服务](#vector-service) · [存储](#persistence) · [个体状态](#individual-state-storage) |
+| 接入与依据 | [库接入](#vm-deployment) · [一手依据](#stack-sources) · [向量资料](#vector-sources) |
 
-<a id="deployment"></a>
 <a id="physical-architecture"></a>
 
 ## 1. 承载约束与物理部署
 
-本节保存已有工程支撑设计。当前推进主线见[主体运行](../DESIGN.md#subject-loop)和[整体研究](../DESIGN.md#validation)，不继续扩展存储、锁、恢复等边界实验。
+本节定义核心及其能力依赖的部署边界。主体行为与职责分工见[逻辑总设计](../DESIGN.md#subject-loop)。
 
-当前承载约束来自用户要求：TinyAGI 核心单机、单二进制、单宿主进程；SQLite 保存业务状态，本地文件保存原始资源。独立向量数据库是能力依赖，本地与远程均支持，Qdrant 为当前默认选择。Go 承担宿主机制，go-mini 组织认知。核心之外允许宿主管理的本地能力子进程、原生构建产物、Node.js 程序包及 Go／Rust／Node.js（npm）工具链与运行依赖；单二进制描述核心发布物，不表示整个运行环境只有一个文件或进程。子进程不拥有第二份主体真值，也不构成 TinyAGI 集群。
+核心采用以下承载约束：TinyAGI 核心单机、单二进制、单宿主进程；SQLite 保存业务状态，本地文件保存原始资源。独立向量数据库是能力依赖，本地与远程均支持，Qdrant 为当前默认选择。Go 承担宿主机制，go-mini 组织认知。核心之外允许宿主管理的本地能力子进程、原生构建产物、Node.js 程序包及 Go／Rust／Node.js（npm）工具链与运行依赖；单二进制描述核心发布物，不表示整个运行环境只有一个文件或进程。子进程不拥有第二份主体真值，也不构成 TinyAGI 集群。
 
-不采用 TinyAGI 集群、Kubernetes、节点接管、服务发现、对象存储或独立业务数据库；用户已撤销这些路线。嵌入向量引擎及 SQLite 向量扩展暂缓，原因是用户选择 SDK 接部署型向量库，并非性能实验证伪。外部模型、工具和远程向量服务不改变核心部署约束。
-
-<a id="local-runtime"></a>
+不采用 TinyAGI 集群、Kubernetes、节点接管、服务发现、对象存储或独立业务数据库，以保持单机核心和本地状态的边界。嵌入向量引擎及 SQLite 向量扩展暂缓，原因是当前选择通过 SDK 接入独立向量服务，并非性能实验证伪。外部模型、工具和远程向量服务不改变核心部署约束。
 
 ### 1.1 物理部署总图
 
@@ -162,11 +165,11 @@ flowchart TB
 | 能力扩展 | MRPC 生成 Go／Mini-Go／Rust／TypeScript 绑定；稳定 Go 能力本地注入，动态 Go／Rust／Node.js（npm）能力用受管理子进程 | 复用库的绑定、资源、取消和服务替换；工具链及子进程管理由宿主适配，未实现组合闭环 |
 | 结构化数据 | `database/sql`＋`modernc.org/sqlite` 为当前默认候选；实验依赖固定为驱动 v1.59.0／libc v1.75.7 | 无 CGO 构建便于单二进制发布；保持驱动所要求的 libc 配套。没有与 C 驱动比较性能，不宣称更快 |
 | 文件与内嵌资源 | Go `os`／`io/fs`，`embed` 打包初始化提示词、预制库源码／接口资料及固定管理静态资源 | 个体生成的认知源码、用户材料和证据在数据目录；内嵌引导资源不意味着自动读取用户材料 |
-| 存储访问与迁移 | 参数化 SQL、显式版本迁移、范围化仓储接口 | 数据所有者和共同提交清楚；暂不引入 ORM／独立迁移服务，具体 DDL 随业务样本再定 |
+| 存储访问与迁移 | 参数化 SQL、显式版本迁移、限定访问范围的仓储接口 | 数据所有者和共同提交清楚；暂不引入 ORM／独立迁移服务，具体 DDL 随业务样本再定 |
 | 资源发现 | 公共检索 API 组合元数据／有界正文与向量端口；Go SDK 接本地／远程向量库，Qdrant 当前默认；FTS5 可作词法加速 | 资料发现实验只支持内容查询必要性；向量路线来自用户调整与官方契约，公共契约及任务收益未测；索引创建同样是明确读取任务 |
 | 模型／工具接入 | 宿主端口＋提供者适配；HTTP 使用复用的 `net/http.Client` | 凭据、协议和 KV 在适配／计算侧；具体模型由真实任务条件选择，不锁死某厂商 SDK 或假定兼容端点语义相同 |
 | 输入、事件与交互 | CLI／本地入口为首批候选；进程内事件机制与外部事件源适配 | 闹钟仅为可创建通知源的示例，不内置核心计时业务；具体来源／平台提供者及真实发送仍待定 |
-| Web 管理工作台 | `net/http` 管理 API＋内嵌前端产物；运行时无需独立 Node 服务 | 完整管理入口沿已有状态所有者处理；组件化前端为候选，类型／注释驱动描述与适配已获认可；具体前端组件未选定，工具未实现 |
+| Web 管理工作台 | `net/http` 管理 API＋内嵌前端产物；运行时无需独立 Node 服务 | 完整管理入口沿已有状态所有者处理；组件化前端为候选，类型／注释驱动描述与适配已纳入设计；具体前端组件未选定，工具未实现 |
 | 契约与序列化 | Go 类型＋版本化 JSON；需要声明式约束时明确 JSON Schema 方言／子集 | `encoding/json` 解析不等于 schema 验证；类型／范围／未知字段／语义分别核对；校验库待真正契约集合确定 |
 | 观测 | `log/slog` 结构化运行日志＋业务 Trace／Operation／Outcome 记录 | 日志不自动包含材料全文、凭据或私密模型载荷；业务依据按访问范围读取，暂不要求外部日志／指标服务 |
 | 测试与沙箱 | 局部 go-mini 实例、能力组合与 AGI 副本分层；原生构建／测试使用受控执行环境 | 生产与试验的状态／能力由装配限定；原生隔离按操作系统能力接入，不引入集群，不把独立进程当成完整沙箱 |
@@ -182,7 +185,7 @@ FTS5 默认 unicode61 以连续 token 字符分词，不是中文语义分词器
 <a id="management-web"></a>
 <a id="web-workspace"></a>
 
-### Web 工作台承载
+### 3.1 Web 工作台
 
 工作台覆盖完整管理范围。Go 宿主提供管理 API 与静态资源，前端构建产物可内嵌二进制；浏览器不直接连接 SQLite、向量服务或 VM。普通查询与命令使用 HTTP，状态推送可用 SSE，前端组件化方案保留 React／TypeScript 候选。动态表单与蓝图组件尚未选定，运行时无需增加独立前端服务。[逻辑职责及审阅方案](management-workspace.md)
 
@@ -190,13 +193,13 @@ FTS5 默认 unicode61 以连续 token 字符分词，不是中文语义分词器
 
 执行库的状态重建、旧帧保留和不兼容变更依据集中在[go-mini 读取记录](go-mini-integration.md#management-library-review)。
 
-提交切换的已认可契约见[管理工作台](management-workspace.md#apply)。设置定义、认知程序与蓝图可设计为热调整对象；修改核心宿主原生实现属于软件更新；按契约受管理的原生能力采用产物准备与 MRPC 绑定切换，见[能力工具链](#capability-toolchain)。未运行补丁、副本或迁移测试。
+提交切换的契约见[管理工作台](management-workspace.md#apply)。设置定义、认知程序与蓝图可设计为热调整对象；修改核心宿主原生实现属于软件更新；按契约受管理的原生能力采用产物准备与 MRPC 绑定切换，见[能力工具链](#capability-toolchain)。未运行补丁、副本或迁移测试。
 
 <a id="prompt-bootstrap"></a>
 
-### 提示词初始化、自迁移与 API 兼容
+### 3.2 提示词初始化、自迁移与 API 兼容
 
-采用“当前完整初始化提示词 + 相邻修订的差异与迁移说明”交付认知初始化要求。每份完整提示词有来源、日期和内容身份；历史正文保留，文本 diff 从相应两份正文生成，语义说明补充变化原因、影响范围、必要／可选项、替代接口及检查条件，并与相同起止身份关联。跨多次修订可顺序处理或使用有完整覆盖关系的累计说明。差异表达要求变化，不是针对所有个体源码的统一补丁；本轮只确定资料及接入契约，不生成实际运行提示词或人物程序。
+采用“当前完整初始化提示词 + 相邻修订的差异与迁移说明”交付认知初始化要求。每份完整提示词有来源、日期和内容身份；历史正文保留，文本 diff 从相应两份正文生成，语义说明补充变化原因、影响范围、必要／可选项、替代接口及检查条件，并与相同起止身份关联。跨多次修订可顺序处理或使用有完整覆盖关系的累计说明。差异表达要求变化，不是针对所有个体源码的统一补丁；实际运行提示词和人物程序尚未交付。
 
 | 接入部分 | 工程承担方式 |
 | --- | --- |
@@ -221,7 +224,7 @@ TinyAGI 对自身公开给 `.mgo` 的稳定接口承担兼容责任：旧导入�
 
 <a id="client-library"></a>
 
-### 客户端预制能力库的交付与接入
+### 3.3 客户端预制能力库的交付与接入
 
 TinyAGI 随核心客户端提供预制工具能力，采用固定源码模块、宿主实现／适配及同源文档／示例的组合。库对 Self 的只读性是维护权和交付边界：权威源码与绑定由客户端维护，个体认知源码、包装和构建产物保存在自己的工作区。库内函数按实际用途执行计算、读取、写入或外部操作，权限及状态修改仍经现有宿主入口。
 
@@ -244,7 +247,7 @@ TinyAGI 随核心客户端提供预制工具能力，采用固定源码模块、
 
 <a id="task-execution"></a>
 
-### 核心与任务的执行装配及外部控制
+### 3.4 任务执行与外部控制
 
 核心 `.mgo` 保持关注、判断和任务组织，Go 宿主负责接纳、执行与控制。主体生命周期不使用业务任务的 deadline；长任务提交成功即返回操作引用，由宿主任务所有者维护 context、预算、工作者与结果事件。认知分段仅拥有局部计算和短调用，跨分段工作归 Operation 管理。接纳边界保存原来源、授权及预算关联，既不把任务挂在提交它的短调用 context 下，也不通过移除取消传播获得不受控后台工作。
 
@@ -266,7 +269,7 @@ API 装配使用普通 library 入口承载有界认知段，避免 main 生命�
 
 <a id="managed-function-tooling"></a>
 
-### 受管理函数的声明与生成工具
+### 3.5 受管理函数的声明与生成工具
 
 采用 TinyAGI 构建工具读取 go-mini 源码快照、类型信息与结构化注释，经确定性校验生成调用描述、适配代码及前端表单／蓝图描述，再编译完整候选 Program。普通内部函数沿语言规则调用，跨宿主边界的可调用函数必须登记并适配受支持的 HostValue 类型。具体注释语法、类型子集和生成工具尚未实现，以下仅为声明示意：
 
@@ -297,7 +300,7 @@ type ReplyOptions struct {
 
 <a id="capability-toolchain"></a>
 
-### 能力工具链、MRPC 与受管理运行
+### 3.6 能力工具链、MRPC 与运行管理
 
 采用范围：尽量复用 go-mini 的 MRPC 与嵌入 API，补充宿主侧构建、局部 VM 试验与子进程生命周期适配。它们实现[能力构建逻辑契约](runtime-protocol.md#capability-lifecycle)，不修改通用 VM 的认知语义，也不将全部内部调用改成 RPC。
 
@@ -329,13 +332,15 @@ MRPC 本地固定绑定足够时不使用 Router；动态 Provider 才使用 Rou
 
 #### Node.js、npm 与 JavaScript RPC 的装配
 
-`.mrpc` 仍为跨语言接口唯一来源；用 `-ts-out` 生成 TypeScript ESM 绑定，再由项目构建流程生成 JavaScript。Node 能力使用 `@d7z-team/mini-go/rpc` 的连接、生成客户端和 Provider 适配，不另写一套 JSON RPC。当前 SDK 内部使用 Worker、Rust WASM Endpoint 与 WebSocket，无需创建 MiniGo 或加载 Program；“无需 Mini-Go 程序”不等于没有 SDK 的 WASM／Worker 分发依赖。固定库依据见[JavaScript RPC 记录](go-mini-integration.md#javascript-rpc-facts)。
+`.mrpc` 仍为跨语言接口唯一来源；用 `-ts-out` 生成 TypeScript ESM 绑定，再由项目构建流程生成 JavaScript。Node 能力使用 `@d7z-team/mini-go/rpc` 的连接、生成客户端和 Provider 适配，不另写一套 JSON RPC。
+
+当前 SDK 内部使用 Worker、Rust WASM Endpoint 与 WebSocket，无需创建 MiniGo 或加载 Program；“无需 Mini-Go 程序”不等于没有 SDK 的 WASM／Worker 分发依赖。固定库依据见[JavaScript RPC 记录](go-mini-integration.md#javascript-rpc-facts)。
 
 采用产物包含实际 JavaScript 入口、生成绑定、包清单、依赖锁定输入及必要分发资源，并关联 Node、npm、SDK、生成器和可选构建工具身份；源码、依赖或 SDK 改变均形成新的实现候选。依赖取得、生命周期脚本及打包过程只在获准准备环境执行，正式启动使用已准备产物，不默认临时安装最新版包。复用已构建 SDK 分发包与从库源码构建 SDK 分别记录条件；包名或本地版本号不证明已从公共仓库取得某一发布物。
 
 Node 服务按既有子进程机制准备、启动、publish、绑定、替换和关闭，其 Worker、连接及下属工作由该运行对象负责。宿主显式传入调用期限与取消信号；SDK 取消等待不当成处理函数或其外部动作已经停止，`terminate()` 也不替代完整清理。断线后原绑定及资源按实际契约失效，重新连接、bind／publish 经原任务与授权核对，不能自动重发不明动作。接口的 64 位整数、字节、可选值和资源沿生成类型处理，不经通用 JSON 转换损失精度或归属。
 
-npm 程序与原生程序共用实现信任、Secret 投影、执行环境准入、父活动预算和沙箱规则；Worker 分离或 WASM 计量不代表整个 Node 服务被隔离。SDK 同时支持浏览器是库事实，本次只扩展 Node 能力端，不因此让管理页面脚本直接获得宿主能力。Web 工作台仍由核心提供管理 API 和内嵌页面，选用 Node 能力不要求另设管理服务。
+npm 程序与原生程序共用实现信任、Secret 投影、执行环境准入、父活动预算和沙箱规则；Worker 分离或 WASM 计量不代表整个 Node 服务被隔离。SDK 同时支持浏览器是库事实，这里仅讨论 Node 能力端，不因此让管理页面脚本直接获得宿主能力。Web 工作台仍由核心提供管理 API 和内嵌页面，选用 Node 能力不要求另设管理服务。
 
 #### 局部 VM 服务与子进程管理
 
@@ -377,7 +382,7 @@ Go `os/exec` 提供启动、管道、等待和取消基础；面向 TinyAGI 的�
 
 <a id="active-learning-integration"></a>
 
-### 主动学习扩展的接入与强度控制
+### 3.7 主动学习扩展的接入与强度控制
 
 学习策略作为可替换的 go-mini 受管理模块接入，原生计算及试验工具经 MRPC 能力调用；复用 activity、execution、evaluation、资源和管理配置，不增加独立学习服务、数据库或进程。长期方向使用 Goal，问题使用 Episode，构建／练习／试验使用 Operation，候选和报告沿本地资源与来源记录维护。核心 VM 不需要理解“兴趣”“学习议程”等业务概念。
 
@@ -393,13 +398,13 @@ Go `os/exec` 提供启动、管道、等待和取消基础；面向 TinyAGI 的�
 
 关闭后终止自发学习的新增准入、接续和自动采用，按所属 Operation／scope／Provider 管理在途取消及清理；共享模型、能力服务和普通任务不随学习关闭而整体停止。迟到结果只登记状态或受限产物，不再启动学习。已关闭状态在宿主重启后仍从已保存配置装配，不因重新创建实例变成启用。用户明确学习任务使用独立接纳范围和预算，不隐式调整主动学习开关。
 
-学习策略的库依据复用[MRPC 与嵌入核对](go-mini-integration.md#rpc-extension-facts)，本轮未确认库原生具备自主选题、学习强度或学习收益评价；这些是 TinyAGI 的宿主与策略设计。强度的逻辑语义见[运行协议](runtime-protocol.md#learning-intensity)，工作台见[学习管理](management-workspace.md#learning-management)。课程、反馈记忆及代码迭代的原论文依据集中于[资料索引](whole-system-evidence.md#active-learning-sources)，没有本项目实际性能或学习效果数据。
+学习策略的库依据复用[MRPC 与嵌入核对](go-mini-integration.md#rpc-extension-facts)，所核对的库接口不包含自主选题、学习强度或学习收益评价；这些是 TinyAGI 的宿主与策略设计。强度的逻辑语义见[运行协议](runtime-protocol.md#learning-intensity)，工作台见[学习管理](management-workspace.md#learning-management)。课程、反馈记忆及代码迭代的原论文依据集中于[资料索引](whole-system-evidence.md#active-learning-sources)，没有本项目实际性能或学习效果数据。
 
 模型参数训练保留为外部训练能力接入选项，管理训练任务、数据许可、候选模型和采用绑定；当前不选择训练框架，也不改变推理 KV 的外部所有权。具体学习算法、工具链参数及强度档位数值按用途配置，实验性不等于已经运行实验。
 
 <a id="maintenance-secrets"></a>
 
-### 模型维护与机密承载
+### 3.8 模型维护与机密处理
 
 维护入口映射到同一 TinyAGI 进程中的管理职责和提供者适配器。模型资产、实际加载、服务配置与认知层模型绑定分别记录；本地模型权重由模型运行组件管理，不打入主体快照或二进制。远程服务仅执行其真实管理 API 支持且已授权的操作，不引入集群管理平台。下载／卸载／删除等操作是有进度和结果的维护任务，不借道模型生成请求。
 
@@ -411,30 +416,38 @@ Web 使用固定受信输入组件与专用机密 API，按已认证用户身份
 
 过滤管线按字段类型和来源确定性处理：入口隔离 → 身份／请求核对 → 类型校验转换 → 保管与引用替换 → 当前授权解析和认证注入 → 返回白名单视图。规则描述可配置，机密处理器使用受信实现，不能执行模型生成的过滤脚本。接口错误不回显提交片段，凭据所需编码仍为机密；普通输入检测只作补充。
 
-审计只记录引用、修订标识、归属、操作者、用途和范围化结果。请求头、异常对象、HTTP 调试、通用日志、SSE 推送、导出及管理草稿均不得自动序列化机密内容。密钥不通过生成的前端代码／蓝图或模型返回再提交；可执行的页面扩展不能接触机密组件或原值管理接口。旧密钥替换后新请求解析当前绑定，禁用旧绑定不等于已经在上游吊销。
+审计只记录引用、修订标识、归属、操作者、用途和允许披露的结果。请求头、异常对象、HTTP 调试、通用日志、SSE 推送、导出及管理草稿均不得自动序列化机密内容。密钥不通过生成的前端代码／蓝图或模型返回再提交；可执行的页面扩展不能接触机密组件或原值管理接口。旧密钥替换后新请求解析当前绑定，禁用旧绑定不等于已经在上游吊销。
 
-资料日期 2026-09-20：[OWASP Forgot Password](https://cheatsheetseries.owasp.org/cheatsheets/Forgot_Password_Cheat_Sheet.html)提供受限一次性会话原理，借用于提交入口；[W3C Secure Contexts](https://www.w3.org/TR/secure-contexts/)界定浏览器可信来源与隔离边界，不保证输入设备可信。两者与下列资料均为当日在线版本，未绑定本项目依赖版本。[OWASP Secrets Management](https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html)支持限定访问、生命周期、用途元数据和避免明文日志；[Ollama 官方 API 源文档](https://github.com/ollama/ollama/blob/main/docs/api.md)提供模型清单、拉取、删除及运行状态的具体例子。资料支持设计分工，不表示已选择 Ollama、已实现机密存储或已验证所有泄漏通路。逻辑规则见[管理专题](management-workspace.md#secret-projection)，实际接入未验证。
+资料日期 2026-09-20：[OWASP Forgot Password](https://cheatsheetseries.owasp.org/cheatsheets/Forgot_Password_Cheat_Sheet.html)提供受限一次性会话原理，借用于提交入口；[W3C Secure Contexts](https://www.w3.org/TR/secure-contexts/)界定浏览器可信来源与隔离边界，不保证输入设备可信。
+
+两者与下列资料均为当日在线版本，未绑定本项目依赖版本。
+
+[OWASP Secrets Management](https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html)支持限定访问、生命周期、用途元数据和避免明文日志；[Ollama 官方 API 源文档](https://github.com/ollama/ollama/blob/main/docs/api.md)提供模型清单、拉取、删除及运行状态的具体例子。
+
+资料支持设计分工，不表示已选择 Ollama、已实现机密存储或已验证所有泄漏通路。逻辑规则见[管理专题](management-workspace.md#secret-projection)，实际接入未验证。
 
 <a id="model-evidence"></a>
 
-### 模型接入的当前证据与选择
+### 3.9 模型接入的证据与选择
 
-当前研究使用用户指定网关的`chat/completions`接口承载JSON动作。请求标识`kimi-k3`、`deepseek-v4-flash`对应实际响应`k3-256k`、`deepseek-flash`；没有独立核实上游权重或固定快照。服务修复与功能轨迹见报告[015](experiments/015-task-outcome-contract.md)、[016](experiments/016-functional-events.md)，参数及接续对照见[017](experiments/017-continuation-study.md)。
+实验使用同一模型网关的`chat/completions`接口承载 JSON 动作。请求标识`kimi-k3`、`deepseek-v4-flash`对应实际响应`k3-256k`、`deepseek-flash`；没有独立核实上游权重或固定快照。服务修复与功能轨迹见报告[015](experiments/015-task-outcome-contract.md)、[016](experiments/016-functional-events.md)，参数及接续对照见[017](experiments/017-continuation-study.md)。
 
 | 接入方面 | 已有依据与当前处理 | 不能据此推定 |
 | --- | --- | --- |
-| 普通消息中的JSON动作 | 独立脚本已完成读取、交付、修订与事件接续；提案仍须经宿主接纳 | go-mini／SQLite／向量SDK组合、原生工具及流式已验证 |
-| 截断与错误 | 保留原始停止原因和 usage；运行记录区分 length 截断、空内容、JSON 错误与服务故障 | HTTP成功等于存在可用动作，或空内容就是自主拒答 |
+| 普通消息中的 JSON 动作 | 独立脚本已完成读取、交付、修订与事件接续；提案仍须经宿主接纳 | go-mini／SQLite／向量 SDK 组合、原生工具及流式已验证 |
+| 截断与错误 | 保留原始停止原因和 usage；运行记录区分 length 截断、空内容、JSON 错误与服务故障 | HTTP 成功等于存在可用动作，或空内容就是自主拒答 |
 | 生成额度与投入档位 | 分别测试默认/1024、low/1024、默认/2048；没有跨任务一致收益，暂不更改统一默认 | 参数被接受就等于网关真实透传；更大额度或更低投入必然省成本 |
-| 用量与缓存 | 保存网关原字段及实际恢复调用；口径冲突和未知费用明确保留 | 确定账单、跨模型速度排名、裸KV或缓存隔离已验证 |
+| 用量与缓存 | 保存网关原字段及实际恢复调用；口径冲突和未知费用明确保留 | 确定账单、跨模型速度排名、裸 KV 或缓存隔离已验证 |
 
 查阅日期2026-09-20：[DeepSeek官方投入说明](https://api-docs.deepseek.com/guides/thinking_mode/)给出推理档位与默认设置，并区分普通消息和原生tools的推理块续接；[接口契约](https://api-docs.deepseek.com/api/create-chat-completion/)定义生成上限和截断含义。这些支持参数候选及错误映射，不证明网关身份、最优额度或任务可靠性。未来接入原生工具须另按提供者契约保留必要续接块，不能照搬报告 017 中普通消息的处理方式。
 
 <a id="vector-service"></a>
 
-### 3.1 向量数据库与 Go SDK
+### 3.10 向量数据库与 Go SDK
 
-**方案状态：SDK 接入独立向量数据库、本地与远程均可配置，并抽取公共 API，是用户确定的方向；Qdrant 是当前默认选择。** TinyAGI 核心仍为单个 Go 程序，默认本地单节点便于起步，远程自建或托管服务也是正式设计选项。服务端不要求用 Go 编写，也不把索引引擎的原生库链接进 TinyAGI。默认选择已按官方资料收尾；具体服务端／SDK 版本在用户明确进入接入时一起固定，当前未部署、未运行 SDK 组合或性能对照。
+**向量检索通过公共 API 和 SDK 接入独立向量数据库，支持本地与远程服务，默认选择 Qdrant。** TinyAGI 核心保持单个 Go 程序；本地单节点便于起步，远程自建或托管服务也可按用途配置。服务端不必使用 Go，也无需将索引引擎的原生库链接进核心。
+
+选择依据是官方资料所述的接口与部署能力。实际接入时固定服务端和 SDK 版本；目前尚无本项目的部署、SDK 组合或性能对照结果。
 
 选择依据是官方客户端、部署复杂度、过滤检索与既有资源模型的适配。Qdrant 官方 Go SDK `github.com/qdrant/go-client/qdrant` 通过 gRPC 接入；官方示例覆盖集合、写入和带过滤条件的查询，本地示例支持单容器及本地持久目录。HNSW 与 payload 索引提供检索机制，不证明本项目的召回率或速度。[官方依据与适用范围](#vector-sources)
 
@@ -450,7 +463,7 @@ Web 使用固定受信输入组件与专用机密 API，按已认证用户身份
 | Qdrant＋官方 Go SDK | 当前默认选择 | 独立向量检索、过滤字段与当前“资源引用＋派生索引”分工匹配；单节点部署清楚。固定版本由接入配置确定，带过滤召回、资源用量及任务收益没有项目测量值 |
 | Weaviate＋官方 Go SDK | 保留替代 | 有 Go 客户端及单节点部署方案；若需要更多对象属性和检索功能由同一服务管理，可重新比较。当前先由 SQLite／knowledge 持有业务事实，采用职责较集中的 Qdrant；这是工程选择，不是速度排名 |
 | Milvus＋官方 Go SDK | 暂缓作为默认 | 所查官方 Docker Compose 方案运行 Milvus、etcd、MinIO，运维组成超出当前简化方向；这不代表所有 Milvus 部署模式都需要三个独立容器。需要其特定能力时再比较，使用主仓库 `client` 中的新 SDK，旧 `milvus-sdk-go` 仓库已弃用 |
-| USearch／Faiss 等嵌入索引、SQLite 向量扩展 | 留作嵌入路线替代 | 用户已改为 SDK 接部署的向量库，当前不承担嵌入引擎的构建、索引管理与过滤组合；未做性能对照，不能写成被实验证伪 |
+| USearch／Faiss 等嵌入索引、SQLite 向量扩展 | 留作嵌入路线替代 | 当前采用 SDK 接入独立向量库，当前不承担嵌入引擎的构建、索引管理与过滤组合；未做性能对照，不能写成被实验证伪 |
 
 SDK 路线的代价是服务运行与版本维护、调用开销及索引更新滞后；远程服务还需计网络、传输与服务成本。收益是把向量引擎、索引文件和查询执行交给专用组件。当前没有本项目数据支持“最快”或某个容量阈值，官方性能数字不作为采用成绩。
 
@@ -473,7 +486,7 @@ SDK 路线的代价是服务运行与版本维护、调用开销及索引更新�
 
 向量服务关闭、超时、模型配置不匹配或索引覆盖不足时，明确返回相应状态；仍可使用现有元数据／有界正文查询，实际能力不足则说明未覆盖内容，不把失败当作“没有相关材料”。不为每个 Mind 建库；真实域和试验域由宿主装配集合／命名空间与必要过滤，具体布局按语料和已声明的隔离配置确定。沙箱不得改写生产索引，共享只读基准须显式登记，详见[沙箱逻辑边界](sandbox-evaluation.md#isolation)。
 
-报告 013 的词法查询和报告 014 的宿主组合均不覆盖此服务。当前已依官方 SDK、过滤检索与单节点部署契约确定 Qdrant 默认方案；比较依据是接入与职责适配，不声称最快或已经测得任务收益。[收尾台账](research-plan.md#remaining-questions)记录 Q3／Q5 的决定与配置责任，该选型不包含新增部署实测。
+报告 013 的词法查询和报告 014 的宿主组合均不覆盖此服务。当前已依官方 SDK、过滤检索与单节点部署契约确定 Qdrant 默认方案；比较依据是接入与职责适配，不声称最快或已经测得任务收益。[设计台账](research-plan.md#remaining-questions)记录 记忆与能力接入的决定与配置责任，该选型不包含新增部署实测。
 
 <a id="persistence"></a>
 
@@ -535,7 +548,7 @@ tinyagi                 单个二进制
 
 <a id="individual-state-storage"></a>
 
-### 4.2.1 个体自定义状态的承载
+#### 4.2.1 个体自定义状态的承载
 
 个体可定义自己的记忆辅助结构、策略状态和工作区内容，宿主在同一 SQLite 中管理其 Self／Mind／模块命名空间、逻辑标识、Schema 身份、结构修订、记录修订、可见范围、写入权限与迁移来源。载荷可用经过声明校验的结构化数据，小文本直接保存，大内容沿文件资源引用；具体表结构与编码在实现时确定，不增加第二套业务数据库或任意 SQL 入口。
 
@@ -549,7 +562,7 @@ tinyagi                 单个二进制
 
 正常重启取得独占运行资格，检查存储和代码身份，恢复已确认状态，接续待办，核对未明效果。旧备份恢复需先停止旧派发，校验数据库、文件清单与代码，记录缺失区间，避免重放可能已经发生的外部动作；换身份不能抹去这段现实历史。
 
-备份包含数据库和全部必要引用文件，不只复制数据库；删除、保留期、派生索引／缓存及备份中的副本分别管理。记录缺失如实可见，不能承诺在线删除清除了所有副本或总能重放。故障矩阵、恢复细节和新增参数实验继续暂缓，完整原规格见[工程归档](archive/runtime-details.md)。
+备份包含数据库和全部必要引用文件，不只复制数据库；删除、保留期、派生索引／缓存及备份中的副本分别管理。记录缺失如实可见，不能承诺在线删除清除了所有副本或总能重放。故障矩阵、恢复细节和新增参数实验继续暂缓，完整原规格见[工程参考](engineering-reference.md#persistence)。
 
 <a id="vm-deployment"></a>
 
@@ -557,17 +570,19 @@ tinyagi                 单个二进制
 
 go-mini 是嵌入式认知执行库，宿主提供状态、权限、能力和预算，脚本负责上下文、判断及协调。实例、scope、Step、活动和模型会话分别管理。生产与沙箱只装配受控接口，关闭 VM 不等于所有外部工作已停止。
 
-候选程序独立构建，保留代码与来源身份；按业务提交边界和 VM 支持的补丁机制部署。旧闭包／defer 和资源引用不因命名函数更新而自动升级；失败保留当前已确认版本，不自动重试现实动作。库事实和接口版本以[go-mini 核对记录](go-mini-integration.md)为准，不把相邻工作区最新代码与旧实验混用。
+候选程序独立构建，保留代码与来源身份；按业务提交边界和 VM 支持的补丁机制部署。旧闭包／defer 和资源引用不因命名函数更新而自动升级；失败保留当前已确认版本，不自动重试现实动作。库事实和接口版本以[go-mini 核对记录](go-mini-integration.md)为准，不把上游最新代码与旧实验混用。
 
 影子验证统一使用[沙箱](../DESIGN.md#sandbox)：录制重放、真实模型重新评估和反事实模拟分开报告；响应按请求含义匹配，缺环境夹具如实说明。没有完整调度和非确定输入记录，不宣称 VM 级确定重放；代码回滚不撤销现实历史。
 
 ### 沙箱装配的库依据
 
-固定提交、当时工作区文件摘要及读取边界统一维护于 [go-mini 沙箱接口记录](go-mini-integration.md#sandbox-library-facts)。工程上采用独立 Instance、受控后端与独立业务状态；来源链接指向当前相邻文件时，不用它代替固定快照证据。
+沙箱接入复用独立实例、受控能力和独立业务状态。对应库行为及其固定源码版本见[库接入参考](go-mini-integration.md#library-facts)，完整隔离效果仍需在实际装配条件下评价。
 
 <a id="stack-sources"></a>
 
 ## 6. 技术选择的一手依据
+
+存储依据于 2026-09-19 查阅：[SQLite 使用场景](https://www.sqlite.org/whentouse.html)支持将其用于本地应用存储；[同步配置](https://www.sqlite.org/pragma.html#pragma_synchronous)说明同步级别及耐久性差异。它们支持机制选择，不证明本项目吞吐或硬件掉电行为。
 
 查阅日期：2026-09-20。下面支持能力事实或工程推论，未复现官方性能数据；本机组合实验单独报告。
 

@@ -4,25 +4,23 @@
 
 [项目入口](../README.md) · [文档索引](README.md) · [文档规范](documentation-guide.md)
 
-目录：[公开范围](#public-scope) · [本地材料](#local-materials) · [本地构建](#local-build) · [工作流](#github-pages) · [检查边界](#checks)
+目录：[公开范围](#public-scope) · [数据可用性](#data-availability) · [本地构建](#local-build) · [工作流](#github-pages) · [检查边界](#checks)
 
 <a id="public-scope"></a>
 
 ## 公开文档与唯一来源
 
-公开网站包含项目介绍、总设计、六份逻辑专题、工程与库参考、决策和证据索引、文档维护说明、整理后的实验报告及历史设计参考。根目录 `SUMMARY.md` 是 mdBook 章节清单，正文仍维护于原文件，不手工维护另一份书稿。
+公开网站包含项目介绍、总设计、六份逻辑专题、工程与库参考、决策和证据索引、文档维护说明、整理后的实验报告。根目录 `SUMMARY.md` 是 mdBook 章节清单，正文仍维护于原文件，不手工维护另一份书稿。
 
 构建脚本只将清单中的 Markdown 复制到生成目录 `.mdbook-src/`，校验每个目标位于公开范围；不会将仓库根目录或整个工作区当作 mdBook 源目录。新增文档须加入章节清单。书稿生成、Mermaid 资产和 HTML 输出都由忽略规则排除，不提交重复产物。
 
-<a id="local-materials"></a>
+<a id="data-availability"></a>
 
-## 本地测试材料与历史讨论
+## 实验资料的公开范围
 
-根目录 `experiments/` 保存测试脚本、夹具、原始模型回复、运行日志及环境记录，可能含历史服务地址和本机路径；`GPT.md` 保存大型历史讨论。这两类材料仅在本地保留，不加入 Git 或公开站点。本次整理已脱敏历史 Markdown 中的个人绝对路径和测试服务地址；涉及冻结哈希的原件以本地非公开副本保留，并在脱敏文档注明对应关系，不改写原始成绩或冒充哈希仍相同。`docs/experiments/` 是整理后的报告，继续公开；原始材料的排除不改变报告中的失败、条件和证据边界。
+实验报告公开条件、汇总统计、失败分析和结论边界。原始输入、脚本与逐次运行记录未随报告发布，因此不能仅凭报告独立复现实验。文献和上游源码直接链接到公开来源；固定版本及核对范围见[库接入记录](go-mini-integration.md#source-snapshots)。
 
-公开页面中指向上述本地材料的链接会转换为“本地材料，不发布”说明；原正文保留本地追溯路径，生成网站不创建不存在的下载链接。相邻 go-mini 源码链接在书稿中转换为其官方仓库入口；这些入口指向当前上游，固定提交及读取范围仍以[库记录](go-mini-integration.md#source-snapshots)为准。
-
-本机凭据文件、IDE 状态及生成目录同样不提交。忽略规则不影响已经在 Git 索引中的文件，因此发布检查还核对索引，拒绝仍被跟踪的本地测试目录、历史讨论和凭据文件。只从索引移除不删除本地文件；若未来已经形成含敏感内容的提交，需要另外处理提交历史，不能仅依赖忽略规则。
+构建仅接受章节清单中的文件。凭据、开发环境文件和生成产物不应加入版本控制；发布前同时检查源文件、Git 跟踪范围和生成页面。
 
 <a id="local-build"></a>
 
@@ -55,12 +53,14 @@ python3 scripts/docs.py build
 
 工作流从官方 release 下载固定版本工具，并校验对应 SHA-256。升级时同时更新版本、下载摘要和这里的说明，再检查构建、站内链接及 Mermaid；第三方工具版本不是 TinyAGI 产品版本。
 
-依据于 2026-09-21 核对：[mdBook 的 CI 说明](https://rust-lang.github.io/mdBook/continuous-integration.html)、[mdbook-mermaid 配置](https://github.com/badboy/mdbook-mermaid#configure-your-mdbook-to-use-mdbook-mermaid)、[GitHub Pages 自定义工作流](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages)。本仓库的章节筛选与发布检查是自身构建规则。
+依据于 2026-09-21 核对：[mdBook 的 CI 说明](https://rust-lang.github.io/mdBook/continuous-integration.html)、[mdbook-mermaid 配置](https://github.com/badboy/mdbook-mermaid#configure-your-mdbook-to-use-mdbook-mermaid)、[GitHub Pages 自定义工作流](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages)。
+
+本仓库的章节筛选与发布检查是自身构建规则。
 
 <a id="checks"></a>
 
 ## 发布检查与适用边界
 
-源文件检查覆盖公开章节、目录及协作说明中的已知凭据形态、认证串、带认证的 URL、个人绝对路径和测试服务地址；命中只输出文件、行号与规则名，不打印匹配值。检查同时拒绝折叠块和可能读取清单外文件的 include 指令。
+源文件检查覆盖公开章节与目录中的已知凭据形态、认证串、带认证的 URL、个人绝对路径和测试服务地址；命中只输出文件、行号与规则名，不打印匹配值。检查同时拒绝折叠块和可能读取清单外文件的 include 指令。
 
 构建后继续检查 HTML、打印页、搜索索引及脚本中的同类敏感模式，核对站内链接、锚点和 Mermaid 资源，拒绝意外出现的原始 Markdown、测试脚本、运行日志或数据库文件。自动模式检查不能识别一切未知秘密或语义上的隐私；新增环境记录和外部材料仍须审阅。构建通过也不代表设计能力经过实测，GitHub 部署完成状态以实际 Actions 结果为准。

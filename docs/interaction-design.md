@@ -2,11 +2,18 @@
 
 用途：逻辑设计专题｜更新：2026-09-21。
 
-[总设计](../DESIGN.md#response-policy) · [文档索引](README.md) · [设计收尾与边界](research-plan.md#remaining-questions)
+[总设计](../DESIGN.md#response-policy) · [文档索引](README.md) · [设计状态与边界](research-plan.md#remaining-questions)
 
-本篇统一维护回应意愿、证据信任、规范与格式、人物关联、隐私、情感和角色互动。用户已确定强自主方向，并要求支持虚拟伴侣与严谨工作共存。以下机制是可修订设计；原场景与论文保存在[研究材料](archive/design-studies.md)；已有报告 016／017 的受限模型场景证据，范围见[实验索引](whole-system-evidence.md#whole-task-experiments)，尚无广泛能力收益、正式基线或真人体验成绩。
+本篇说明主体如何决定是否回应、判断信息可信度、识别交流对象，并按情境处理隐私、情感和输出要求。设计允许主体因自身偏好拒答，也支持陪伴交流与严谨工作之间的切换。
 
-目录：[情境](#context) · [回应](#response) · [意愿](#willingness) · [投入](#effort) · [承诺](#commitments) · [观测](#observation) · [信任](#trust) · [污染](#contamination) · [规范](#norms) · [格式](#output) · [人物](#identity) · [关联](#linking) · [隐私](#privacy) · [社交](#social) · [情感](#affect) · [角色](#roleplay) · [主动联系](#initiative) · [记忆](#memory) · [场景](#scenarios) · [取舍与验证](#validation)
+原始推导与论文见[资料依据](whole-system-evidence.md#interaction-references)，已有受限模型场景及其失败见[实验索引](whole-system-evidence.md#whole-task-experiments)。这些证据尚不足以建立正式能力基线或证明真人交互效果。
+
+| 阅读主题 | 章节入口 |
+| --- | --- |
+| 回应选择 | [情境](#context) · [回应](#response) · [意愿](#willingness) · [投入](#effort) · [承诺](#commitments) |
+| 证据与要求 | [观测](#observation) · [信任](#trust) · [污染](#contamination) · [规范](#norms) · [格式](#output) |
+| 人物与隐私 | [人物](#identity) · [关联](#linking) · [隐私](#privacy) · [社交](#social) |
+| 关系与场景 | [情感](#affect) · [角色](#roleplay) · [主动联系](#initiative) · [记忆](#memory) · [场景](#scenarios) · [取舍与依据](#validation) |
 
 <a id="context"></a>
 
@@ -257,7 +264,7 @@ Role 是对外表现设定，Persona 是长期心智身份。短期剧情或长�
 
 当前不采用固定理性／感性人格、统一信誉或爱意分数、对所有可答请求强制接受、同人关联打通全部记忆、只在输出末尾过滤隐私、或用严格格式代替内容核对。它们分别混淆认知责任、尚未校准状态、用户自主要求、信息用途和证据边界；不是本项目逐项实验证伪。
 
-详细文献、备选和分因素对照保存在[回应研究](archive/design-studies.md#response-policy-sources)、[来源与规范研究](archive/design-studies.md#context-trust-and-expression-sources)、[身份与隐私研究](archive/design-studies.md#identity-privacy-and-social-context-sources)、[情感与角色研究](archive/design-studies.md#affect-roleplay-and-work-sources)。这些材料支持设计动机，不证明 TinyAGI 已具备相关效果。
+详细文献、备选和分因素对照保存在[回应研究](whole-system-evidence.md#interaction-references)、[来源与规范研究](whole-system-evidence.md#interaction-references)、[身份与隐私研究](whole-system-evidence.md#interaction-references)、[情感与角色研究](whole-system-evidence.md#interaction-references)。这些材料支持设计动机，不证明 TinyAGI 已具备相关效果。
 
 [报告 016](experiments/016-functional-events.md)补充受控模型样本：两个模型在已核实同人后的群聊均保留私人预约、交付公开时间，多活动撤销也未跨到另一人的任务；但未关联阶段漏答，且一条公开答复擅自补出“每日”。这是部分行为证据，未证明实际身份查证、普遍保密或情感效果。保密与公开帮助一起评价，时间范围及频率也须有依据，不能以结构字段正确代替正文核对。
 

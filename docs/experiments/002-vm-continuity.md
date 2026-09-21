@@ -1,8 +1,8 @@
-# E1/E7：实际 go-mini 的运行边界实验
+# 报告 002 · 实际 go-mini 的运行边界实验
 
-[文档索引](../README.md#experiments) · [当前设计](../../DESIGN.md#evidence) · [研究问题](../research-plan.md#e1)
+[文档索引](../README.md#experiments) · [当前设计](../../DESIGN.md#evidence) · [研究问题](../research-plan.md#remaining-questions)
 
-日期：2026-09-19。证据层次：受控原型。状态：完成本轮机制实验；未测试模型认知质量、真实持久恢复或长期性能。
+日期：2026-09-19。证据层次：受控原型。状态：完成本实验机制实验；未测试模型认知质量、真实持久恢复或长期性能。
 
 ## 1. 固定条件
 
@@ -48,7 +48,7 @@ initialize root module: fn.init instruction 24 const:
 execution step limit exceeded: max 500
 ```
 
-失败保留在[试跑日志](../../experiments/results/vm-continuity-initialization-failure.log)，最终程序也单独记录该配置的初始化失败。没有把限额调高后声称原条件通过。
+失败保留在试跑日志，最终程序也单独记录该配置的初始化失败。没有把限额调高后声称原条件通过。
 
 为了隔离业务 scope 的计费，追加一个不导入标准库的纯整数夹具，继续使用同样的 500 指令限额和预定工作量：
 
@@ -82,13 +82,15 @@ execution step limit exceeded: max 500
 
 **继续开放：认知状态表示和分段策略。** 整数 checkpoint 没有验证目标、假设、未完成问题等语义状态能否正确恢复，也没有证明长期运行稳定或分段成本可接受。
 
-## 7. 复现与原始材料
-
-- [实验源码与运行说明](../../experiments/vm-continuity/README.md)
-- [完整 JSON 结果](../../experiments/results/vm-continuity.json)
-- [最终运行日志](../../experiments/results/vm-continuity-run.log)
-- [输入和环境记录](../../experiments/results/vm-continuity-provenance.json)
+- 实验源码与运行说明
+- 完整 JSON 结果
+- 最终运行日志
+- 输入和环境记录
 
 运行只依赖本地相邻源码和已有 Go 环境，网络下载关闭。原始输出含各条件的值、scope 指令数、版本摘要及截断的引用扫描，保留所有 100 个配额分段。
 
-下一项 E1 实验转向[模型上下文与会话连续性](../cognition-boundaries.md)。在模型服务和预算确定前，不生成认知质量分数，不用这次机制实验替代模型对照。
+下一项 E1 实验转向[模型上下文与会话连续性](../whole-system-design.md#boundaries)。在模型服务和预算确定前，不生成认知质量分数，不用这次机制实验替代模型对照。
+
+## 数据可用性
+
+本报告公开实验条件、汇总统计和失败分析。原始输入、脚本及逐次运行记录未随报告发布，因此不能仅凭本文独立复现实验。

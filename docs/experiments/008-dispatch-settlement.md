@@ -1,18 +1,18 @@
-# E8d：接纳、启动与核对入账
+# 报告 008 · 接纳、启动与核对入账
 
-[文档索引](../README.md#experiments) · [总体设计](../../DESIGN.md#execution) · [研究状态](../research-plan.md#e8d)
+[文档索引](../README.md#experiments) · [总体设计](../../DESIGN.md#execution) · [研究状态](../research-plan.md#remaining-questions)
 
-日期：2026-09-19。证据为真实子进程、管道和本地 SQLite 事务，不是 PostgreSQL、网络或 Kubernetes 验证。方案归纳见[恢复决策](../recovery-decisions.md)。
+日期：2026-09-19。证据为真实子进程、管道和本地 SQLite 事务，不是 PostgreSQL、网络或 Kubernetes 验证。方案归纳见[恢复决策](../runtime-protocol.md#recovery)。
 
 ## 1. 条件和过程
 
-先保存 DESIGN v2.1，再固定[15 个场景](../../experiments/dispatch-settlement/README.md)。provider 数据库保存接纳、可派发状态和启动进入记录，world 独立保存效果，authority 保存指派、证据、预留、额度、释放账与 outbox；三库之间没有事务。均使用 SQLite 3.53.4 WAL／FULL，Python 3.14.7。
+先保存 DESIGN v2.1，再固定15 个场景。provider 数据库保存接纳、可派发状态和启动进入记录，world 独立保存效果，authority 保存指派、证据、预留、额度、释放账与 outbox；三库之间没有事务。均使用 SQLite 3.53.4 WAL／FULL，Python 3.14.7。
 
 父进程是受控运行环境，响应派发子进程的启动请求并创建独立工作进程。因此杀掉派发器不会自动杀掉工作者。所有次序由管道屏障控制，只杀本实验子进程；不把等待时长当作节点停止证据。环境未发现 postgres／psql／initdb、kubectl 或 kind；未安装数据库或连接外部服务。
 
-首次执行遇到记录器位置参数 `name` 与观测字段 `name=` 冲突，8 例中断。[首次结果](../../experiments/results/dispatch-settlement.json)和[原脚本](../../experiments/dispatch-settlement/experiment-initial.py)完整保留，不用于完整结论。仅修复参数命名后，[v2](../../experiments/results/dispatch-settlement-v2.json)全例通过。
+首次执行遇到记录器位置参数 `name` 与观测字段 `name=` 冲突，8 例中断。首次结果和原脚本完整保留，不用于完整结论。仅修复参数命名后，v2全例通过。
 
-复核 v2 发现 B2 在新工作完成后才放行旧工作，代号变化与状态变化同时影响拒绝。v3 将旧请求放在换代后、新执行者进入前，此时仍为 queued，以区分代号检查的贡献；预登记场景、SQL 和判据不变。[修订记录](../../experiments/dispatch-settlement/REVISIONS.md)说明差异，v2 脚本和数据仍保留。下表只统计[v3 完整运行](../../experiments/results/dispatch-settlement-v3.json)，不把重跑合并为更多独立样本。
+复核 v2 发现 B2 在新工作完成后才放行旧工作，代号变化与状态变化同时影响拒绝。v3 将旧请求放在换代后、新执行者进入前，此时仍为 queued，以区分代号检查的贡献；预登记场景、SQL 和判据不变。修订记录说明差异，v2 脚本和数据仍保留。下表只统计v3 完整运行，不把重跑合并为更多独立样本。
 
 ## 2. 结果
 
@@ -44,7 +44,7 @@ A2 不是证明接纳记录无法恢复：若 queued 本身已定义为可扫描
 3. **按预留一次性入账。** 可信停止证据先保存；当前 owner 在一个事务内核对指派和证据范围，完成预留释放、额度返还、唯一释放账及 outbox。
 4. **保留旧事实。** 旧来源证据不因接管而丢弃，但它不能授予旧 owner 当前入账权。
 
-选择这些作为下一阶段设计和实验基线；具体持久化实现仍需数据库与集群验收。独立消息系统或工作流引擎不能替代提供者进入契约和外部效果核对，见[官方资料与后端选择](../recovery-decisions.md#backend)。
+选择这些作为下一阶段设计和实验基线；具体持久化实现仍需数据库与集群验收。独立消息系统或工作流引擎不能替代提供者进入契约和外部效果核对，见[官方资料与后端选择](../runtime-protocol.md#recovery)。
 
 ## 4. 条件与剩余边界
 
@@ -53,8 +53,6 @@ A2 不是证明接纳记录无法恢复：若 queued 本身已定义为可扫描
 SQLite 写事务串行化不证明 PostgreSQL 并发隔离或复制行为。证据认证、持久储存回退、跨资源事务、长动作、外部设备已经释放的真实性均为未测范围。C/D 使用可信停止证据的固定输入，验证的是入账和关联；D2 同时改变多个身份字段，不是逐字段必要性的独立消融。
 
 每组次序是有限对照，不是穷尽调度。后续须验证接纳取消与进入同时竞争、旧备份恢复导致的代号回退，以及数据库多写入者／故障转移下的相同不变量。
-
-## 5. 复核材料
 
 当前命令：`python3 experiments/dispatch-settlement/experiment.py --output experiments/results/dispatch-settlement-v3.json`。复跑换路径，程序拒绝覆盖。临时库已清理，逐事件轨迹与各库终态表保存在 JSON。
 
@@ -65,3 +63,7 @@ SQLite 写事务串行化不证明 PostgreSQL 并发隔离或复制行为。证�
 | dispatch-settlement-v3.json | `c278650caa61f848a037510d30cfbd2d890d4fa8ec0d5f726892a25e0355c3a0` |
 
 初版和 v2 脚本哈希见修订记录，各次 JSON 也记录其脚本与预登记哈希。旧 E0～E8c 的材料保持不变。
+
+## 数据可用性
+
+本报告公开实验条件、汇总统计和失败分析。原始输入、脚本及逐次运行记录未随报告发布，因此不能仅凭本文独立复现实验。
