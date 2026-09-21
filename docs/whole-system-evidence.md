@@ -80,6 +80,7 @@
 | 来源修订、路由与版本采用 | [来源与能力](../DESIGN.md#knowledge) | [依据](whole-system-evidence.md#design-closure)，P12–P14 |
 | 意愿、规范、身份、情感 | [交流与情境](interaction-design.md) | [各专题原资料](interaction-design.md#validation)；[报告 016](#report-016)补充合成人物／受众场景，不提供真实身份或情感效果的保证 |
 | 投影、外部事件源、缓存与沙箱 | [资源](projection-input-and-compute.md)、[沙箱](sandbox-evaluation.md) | 各篇来源表保留具体版本与未测范围；计时夹具不证明核心必须内置闹钟 |
+| 统一资源、Secret 类型及情境投影 | [公共属性与类型规则](projection-input-and-compute.md#resource-contract)、[操作接纳](runtime-protocol.md#resource-operations) | [NIST 属性授权与 W3C 来源模型](projection-input-and-compute.md#resource-evidence)，2026-09-21 查阅；支持概念组织，报告 012／013 不证明完整资源契约或机密隔离已测 |
 | 统一事件与活动接续 | [事件主线](../DESIGN.md#event-driven)、[共同协议](runtime-protocol.md#events) | [CloudEvents 参考与证据边界](runtime-protocol.md#event-sources-evidence)；报告 012／014 为局部流程，016／017 补充受控来源与接续对照；完整体系未测 |
 | 能力评估、回归与采用门槛 | [测试集及基线比较](sandbox-evaluation.md#evaluation-design) | [评估一手依据及查阅日期](sandbox-evaluation.md#evaluation-sources)；报告 011／012／014 仅有局部控制，真实模型能力基线未建 |
 | 逻辑模块、模型端口与工程映射 | [逻辑契约](runtime-protocol.md#software-modules)、[软件与技术选择](engineering-reference.md#software-modules) | [官方依据与版本](engineering-reference.md#stack-sources)、[宿主组合报告](experiments/014-host-composition.md) |
@@ -128,7 +129,7 @@
 | [Plan-and-Act，修订 3，2025-04-22](https://arxiv.org/abs/2503.09572v3)，摘要及动态规划机制 | 高层规划与环境动作可分离；文中方案包含专门训练 | 计划可修订，执行和责任由状态所有者管理。拆分、转交和跨日接续是本项目责任设计，不声称复现训练收益 |
 | [Do NOT Think That Much for 2+3=?，ICML 2025，PMLR 267](https://proceedings.mlr.press/v267/chen25bx.html)，摘要 | 所研究推理模型存在冗余解法，进一步生成的收益有限；论文以训练方法降低冗余 | 默认简短，额外思考须针对未解缺口并受预算限制；不照搬训练方法或固定截断阈值，已有报告 017 也不支持统一低投入获胜 |
 
-活动身份、完成核对和退出责任沿用总设计及报告 015–017 的局部依据。论文并未证明强自主更合意；强自主由用户明确选择，行为记录也不宣称揭示模型隐藏的真实因果。
+活动身份、完成核对和退出责任沿用总设计及报告 015–017 的局部依据。论文并未证明强自主更合意；强自主属于项目目标，行为记录也不宣称揭示模型隐藏的真实因果。
 
 <a id="closure-memory"></a>
 
@@ -235,7 +236,7 @@
 
 这些资料分别支持设计动机、条件和反例，不组成 TinyAGI 整体认知有效的证明。交付与跟进的划分主要来自用户任务的职责分析，未声称由论文直接验证。
 
-管理工作台的新增副本／动态编辑设计依据见[管理专题资料表](management-workspace.md#sources)，2026-09-20 查阅 JSON Forms、Node-RED、LangGraph、Ollama 官方文档及 OWASP Secrets Management；补充模型维护、secret 投影，以及用户归属、专用指令和过滤转换流程；同日补查 OWASP Forgot Password 与 W3C Secure Contexts，分别借鉴一次性受限会话和可信来源的适用边界；go-mini 固定提交的只读核对见[库接入参考](go-mini-integration.md#management-library-review)。
+管理工作台的副本、动态编辑、模型维护及机密交互依据见[管理专题资料表](management-workspace.md#sources)。2026-09-20 查阅 JSON Forms、Node-RED、LangGraph、Ollama 官方文档及 OWASP Secrets Management、Forgot Password 和 W3C Secure Contexts；支持范围包括声明式界面、能力维护、凭据生命周期、受限提交会话和可信来源，不能据此保证端到端隔离。go-mini 固定提交依据见[库接入参考](go-mini-integration.md#management-library-review)。统一资源与 Secret 类型的共同定义及资料见[资源专题](projection-input-and-compute.md#resource-evidence)。
 
 来源支持相关分工；当前方案状态见[台账](research-plan.md#management-extension)，未增加实验成绩。
 

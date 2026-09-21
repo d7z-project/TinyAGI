@@ -11,7 +11,7 @@
 
 - [主体运行、认知协作与学习](docs/whole-system-design.md)
 - [交流、人物与情境](docs/interaction-design.md)
-- [资源投影、输入与计算](docs/projection-input-and-compute.md)
+- [资源契约、输入与计算](docs/projection-input-and-compute.md)
 - [逻辑模块、能力契约与运行协议](docs/runtime-protocol.md)
 - [沙箱、能力评估、回归测试与复盘](docs/sandbox-evaluation.md)
 - [管理工作台与人工干预](docs/management-workspace.md)

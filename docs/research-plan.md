@@ -9,7 +9,7 @@
 | 阅读主题 | 章节入口 |
 | --- | --- |
 | 总体状态 | [当前范围](#research-status) · [状态定义](#closure-status) · [完整任务](#whole-system) · [基础设计](#remaining-questions) · [用途配置](#deferred) |
-| 扩展方案 | [管理工作台](#management-extension) · [能力扩展](#capability-extension) · [Node.js 补充](#node-rpc-extension) · [主动学习](#active-learning-extension) |
+| 资源与扩展 | [统一资源契约](#unified-resources) · [管理工作台](#management-extension) · [能力扩展](#capability-extension) · [Node.js 补充](#node-rpc-extension) · [主动学习](#active-learning-extension) |
 | 个体与控制 | [初始化与迁移](#initialization-extension) · [预制能力库](#prebuilt-extension) · [任务控制](#task-control-extension) · [架构一致性](#architecture-consistency) |
 | 维护 | [后续维护](#next-steps) |
 
@@ -26,7 +26,7 @@
 | 状态 | 适用对象 | 含义 |
 | --- | --- | --- |
 | 设计约束 | 统一主体、强自主、统一事件、投影、完整管理、可信机密输入等系统要求 | 必须在架构与专题保持一致；不表示已实现 |
-| 已定设计 | 基础机制，以及既定的编写契约、调用边界热加载、能力构建与多语言接入、主动学习扩展及强度控制、提示词初始化与个体自迁移、客户端预制能力库、核心／任务解耦及外部控制、跨契约规则 | 已有资料或局部证据支持，可作为继续设计及未来实现的依据 |
+| 已定设计 | 基础机制、统一资源契约，以及既定的编写契约、调用边界热加载、能力构建与多语言接入、主动学习扩展及强度控制、提示词初始化与个体自迁移、客户端预制能力库、核心／任务解耦及外部控制、跨契约规则 | 已有资料或局部证据支持，可作为继续设计及未来实现的依据 |
 | 设计建议 | 管理工作台中尚未单独确认的副本重建细则 | 已提出方案，具体继承与重建规则尚未最终确定 |
 | 用途配置 | 模型、设备、预算、联系窗口和评价门槛等 | 随具体用途确定，不是未关闭架构问题 |
 | 历史证据 | 报告、脚本、输入、失败与原始数据 | 仅支持其固定条件，不是当前任务队列 |
@@ -75,6 +75,25 @@
 
 容量、备份、驱动和故障矩阵继续不作为当前设计前置条件；旧局部证据仅支持原范围。
 
+<a id="unified-resources"></a>
+
+## 统一资源契约的设计范围
+
+公共属性、类型规则、情境投影和受控操作为已定设计。文档、媒体、程序、Secret、模型资产和可复用计算结果沿共同契约描述；原状态所有者继续维护内容及业务事实。详细定义唯一见[资源专题](projection-input-and-compute.md#resource-contract)。
+
+| 决策 | 理由与维护位置 |
+| --- | --- |
+| 小型公共核心与类型扩展 | 统一身份、归属、来源、表示、处理约束和生命周期，保留不同资源的专门操作；避免巨大通用结构或无约束标签；[公共属性](projection-input-and-compute.md#resource-attributes) |
+| 按情境投影，实际操作核对当前条件 | 支持不同身份、受众及执行域；引用和旧视图不授予权限；[操作接纳](runtime-protocol.md#resource-operations) |
+| Secret 纳入共同体系并保持原值限制 | 复用描述和发现，保留可信提交、用户归属及绑定实际实现的专用使用；[类型规则](projection-input-and-compute.md#secret-resource)、[管理交互](management-workspace.md#secret-projection) |
+| 内容派生与运行使用分开 | 追溯来源而不将认证后的全部业务结果误当机密；派生默认不扩大范围，转换者须获准处理输入；[派生规则](projection-input-and-compute.md#resource-derivation) |
+| 认知、执行、交付分别记录 | 避免把加载、已缓存或其他心智已读当作当前模型的证据；[使用记录](projection-input-and-compute.md#resource-reading) |
+| 同源管理及沙箱装配 | 类型、处理实现与表单描述一致采用，副本按范围取得材料和测试资格；[工作台](management-workspace.md#resource-management)、[沙箱](sandbox-evaluation.md#isolation) |
+
+不采用仅有可读／机密开关、全业务对象通用 CRUD、固定全局投影或模型判断权限的方式，因为这些方案无法同时保留业务语义和当前操作范围。共同契约的代价是各类型需要明确结构、操作和处理责任；不增加独立主体、状态库或策略产品。
+
+[NIST 属性授权与 W3C 来源模型](projection-input-and-compute.md#resource-evidence)支持概念组织，资料查阅日期及版本由资源专题保存。报告 012／013 只支持原读取和发现条件，不证明统一资源契约、Secret 隔离或全类型接入已验证。精确字段名、方法签名和初始类型清单留在工程接入中确定；不新增待执行实验，也不改变完整副本重建细则的建议状态。
+
 <a id="management-extension"></a>
 
 ## 管理工作台的要求与建议
@@ -104,13 +123,13 @@
 | 试验与运行对象 | 局部程序、能力组合、主体副本分层；构建全过程受控；子工作共享父活动预算；[沙箱](sandbox-evaluation.md#test-scopes) | 不默认全量复制主体，不把子 VM 或独立进程当作完整隔离，不复制生产资源句柄 |
 | 库事实与宿主补充 | 固定提交的 RPC、嵌入 API 与检索边界见[接入记录](go-mini-integration.md#rpc-extension-facts) | 未确认库已有通用子进程或脚本子 VM 管理服务；宿主封装是待实现设计，不记录为已完成接入 |
 
-一手资料足以支持以上机制分工，未新增构建成功率、性能或任务收益实测。具体工具链版本、平台隔离适配和投入额度随用途配置，不列作当前未关闭架构项。此前副本重建细则的建议状态保留，这次分层确认不扩大为对所有副本细节的确认。
+一手资料支持以上机制分工，尚无完整构建成功率、性能或任务收益实测。具体工具链版本、平台隔离适配和投入额度随用途配置；能力试验分层不改变副本重建细则的建议状态。
 
 <a id="node-rpc-extension"></a>
 
 ### Node.js 与 npm 能力端补充
 
-2026-09-21 用户明确扩展能力端至 Go／Rust／Node.js（npm），本项为已定设计。沿既有 MRPC 单一接口来源生成 TypeScript／JavaScript 调用与服务适配，复用 npm 生态；程序包、锁定依赖、运行环境及 SDK 资源共同关联固定实现。依赖准备、试验、信任、任务中止、替换与 Secret 继续走原契约，不新建主体或独立管理后端。
+能力端支持 Go／Rust／Node.js（npm），本项为已定设计。沿既有 MRPC 单一接口来源生成 TypeScript／JavaScript 调用与服务适配，复用 npm 生态；程序包、锁定依赖、运行环境及 SDK 资源共同关联固定实现。依赖准备、试验、信任、任务中止、替换与 Secret 继续走原契约，不新建主体或独立管理后端。
 
 选择理由是使用现有 JavaScript SDK／包及库已有 RPC 支持；不要求把 npm 能力改写为 Go／Rust，也不强制所有能力转为 Node。当前 Node SDK 的 WebSocket 接入与 Go／Rust 的可选原生传输分别装配，不假定全部传输对等。库依据见[固定快照](go-mini-integration.md#javascript-rpc-facts)，工程方式见[Node 接入](engineering-reference.md#node-rpc-integration)；尚无本项目 Node 接入实测结果。
 
@@ -183,6 +202,7 @@
 
 | 范围 | 最终采用方案及理由 | 排除的解释与唯一正文 |
 | --- | --- | --- |
+| 资源与类型操作 | 公共属性、情境投影、内容表示和派生关系共用，原所有者维护状态；Secret 保留专用通路，操作绑定当前身份与范围 | 不把引用当授权，不以读取／执行／交付混用证据；[共同定义](projection-input-and-compute.md#resource-contract)、[操作](runtime-protocol.md#resource-operations) |
 | 控制对象与传播 | Episode 是持续活动，Task 是活动内可选任务安排，Operation 是已接纳工作；当前尝试另有执行身份。控制携带类型与传播范围，认知中断和任务停止各有归属 | 不使用含义不明的“任务 ID”，不因认知被取消而自动终止独立操作；[生命周期与控制](runtime-protocol.md#core-task-lifecycle) |
 | 步骤与操作接纳 | 步骤内通过独立入口接纳请求，保留稳定请求键与回执；最终提案引用已有操作并接纳剩余意图。支持先读工具结果再作判断，也保留失败前已发生的成本和效果 | 不重复派发，不用最终提交失败抹去独立工作；[时序](runtime-protocol.md#step-operation-admission) |
 | 统一主体的公共决定 | 私有 Mind 状态、受委托活动决定与 Self 公共提案分开；指定既有心智承担整合，按证据与责任裁定，未决保留原公共状态 | 不设永久最高人格、不以写入先后或多数票取代公共决定；[公共整合](whole-system-design.md#public-decisions) |
