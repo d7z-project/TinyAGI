@@ -1,6 +1,6 @@
 # 文档索引
 
-用途：阅读与术语索引｜更新：2026-09-21。
+用途：阅读与术语索引｜更新：2026-09-26。
 
 [项目入口](../README.md) · [完整总设计](../DESIGN.md) · [设计状态](research-plan.md)
 
@@ -108,6 +108,8 @@
 | 公共 API、事件接入／观察、ResourceSearch／VectorIndex | [公共契约](runtime-protocol.md#capability-api)、[检索责任](runtime-protocol.md#vector-service) |
 | 能力构建、接口、产物、采用与运行对象 | [整体闭环](../DESIGN.md#capability-development)、[逻辑契约](runtime-protocol.md#capability-lifecycle)、[管理入口](management-workspace.md#capability-management)、[设计范围](research-plan.md#capability-extension) |
 | 功能采用、实现信任、固定产物与环境准入 | [逻辑边界](runtime-protocol.md#implementation-trust)、[工程承载](engineering-reference.md#implementation-admission) |
+| 隔离执行、高风险调用与环境缺失 | [整体职责](../DESIGN.md#isolated-execution)、[准入契约](runtime-protocol.md#isolated-execution)、[管理](management-workspace.md#execution-environments)、[评价](sandbox-evaluation.md#isolated-execution-evaluation)、[状态](research-plan.md#isolated-execution-extension) |
+| 可选容器、Rootless Docker 与 gVisor | [工程承载及取舍](engineering-reference.md#container-execution)、[官方资料与适用边界](engineering-reference.md#container-sources)；依赖可选，必要执行限制不可自动降级 |
 | 客户端预制能力库、只读维护、可选使用与个体包装 | [逻辑契约](runtime-protocol.md#prebuilt-library)、[管理](management-workspace.md#prebuilt-management)、[评价](sandbox-evaluation.md#prebuilt-evaluation)、[库事实](go-mini-integration.md#prebuilt-library-facts)、[状态](research-plan.md#prebuilt-extension) |
 | 热加载、编写契约、结构化注释与受管理函数 | [总设计](../DESIGN.md#hot-reload-contract)、[逻辑契约](runtime-protocol.md#managed-functions)、[表单与蓝图](management-workspace.md#dynamic-editing)、[函数测试](sandbox-evaluation.md#function-evaluation)、[工程生成工具](engineering-reference.md#managed-function-tooling) |
 | 普通配置、作用域覆盖、当前权限与控制 | [解析与生效](runtime-protocol.md#configuration-resolution)、[管理视图](management-workspace.md#editing) |

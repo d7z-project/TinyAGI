@@ -1,6 +1,6 @@
 # TinyAGI 逻辑总设计
 
-用途：逻辑总设计｜阶段：设计｜更新：2026-09-21。
+用途：逻辑总设计｜阶段：设计｜更新：2026-09-26。
 
 [项目入口](README.md) · [文档总索引](docs/README.md) · [设计状态](docs/research-plan.md#research-status)
 
@@ -26,6 +26,7 @@ TinyAGI 要构建一个长期存在的统一主体：通过数字环境和通用
 | 如何取证、计算和行动 | [记忆与能力](#services)、[执行](#execution) | [资源与计算](docs/projection-input-and-compute.md)、[运行与存储](docs/runtime-protocol.md) |
 | 各类资源怎样统一管理 | [资源契约与投影](#resource-projections) | [公共属性与类型规则](docs/projection-input-and-compute.md#resource-contract)、[操作接纳](docs/runtime-protocol.md#resource-operations)、[资源管理](docs/management-workspace.md#resource-management) |
 | 如何扩充能力 | [能力构建闭环](#capability-development) | [构建与运行契约](docs/runtime-protocol.md#capability-lifecycle)、[分层试验](docs/sandbox-evaluation.md#test-scopes)；技术接入见工程参考 |
+| 高风险能力怎样隔离 | [受控隔离执行](#isolated-execution) | [执行契约](docs/runtime-protocol.md#isolated-execution)、[环境管理](docs/management-workspace.md#execution-environments)、[工程承载](docs/engineering-reference.md#container-execution) |
 | 预制能力如何使用 | [预制能力与个体实现](#prebuilt-capabilities) | [能力契约](docs/runtime-protocol.md#prebuilt-library)、[客户端承载](docs/engineering-reference.md#client-library) |
 | 人物如何创建与更新 | [初始化与自迁移](#initialization-migration) | [人物形成](docs/whole-system-design.md#self-initialization)、[引导与兼容契约](docs/runtime-protocol.md#bootstrap-migration) |
 | 如何主动学习 | [主动学习与自我迭代](#active-learning) | [主体学习策略](docs/whole-system-design.md#active-learning)、[学习强度与关闭](docs/runtime-protocol.md#learning-intensity) |
@@ -173,8 +174,10 @@ flowchart TB
 
 ```mermaid
 flowchart TB
-    Events["统一事件"] -->|"能力请求"| Execution["操作接纳、调用与执行记录"]
-    Execution -->|"已接纳操作"| Providers["模型／KV、读取、检索、算法与工具能力"]
+    Events["统一事件"] -->|"能力请求"| Execution["操作接纳、执行条件与记录"]
+    Execution -->|"无需隔离的获准操作"| Providers["模型／KV、读取、检索、算法与工具能力"]
+    Execution -->|"需隔离的获准操作"| Isolated["执行域装配：受控资源与外部访问"]
+    Isolated -->|"按绑定范围运行"| Providers
     Providers -->|"结果、产物与用量"| Events
     Providers -->|"创建或管理"| Sources["外部事件源"]
     Sources -->|"通知经适配接入"| Events
@@ -189,6 +192,8 @@ flowchart TB
 ```
 
 长工作由操作所有者管理，结果回到原活动；控制通路优先处理，不等待慢模型。止动请求已发出、控制状态已正式接纳与实际执行已停止分别记录，效果核对和资源收束另保留进展。外部事件源由能力创建／接入，不内置闹钟业务。详见[任务控制](#core-task-control)、[执行与效果](#effects)。
+
+高风险能力的准备与运行由宿主绑定满足要求的隔离环境；环境可选装配，缺失不影响无此要求的能力，但不能放宽当前操作的执行条件。真实任务与沙箱试验共用[隔离执行契约](#isolated-execution)，业务状态仍归原所有者。
 
 <a id="responsibility-bootstrap"></a>
 
@@ -590,6 +595,10 @@ flowchart TB
 
 普通用户要求使用自己的外部服务账号时，主体发现缺少凭据，只申请指定用途的机密提交。运行机制向该用户呈现可信入口；用户一次提交完成保管及页面上已明确的使用授权，原活动收到可用投影后继续。用户可在“我的凭据”替换或撤销，管理面板按权限更正归属；跨平台身份关联不自动扩大机密使用范围。完整[场景](docs/management-workspace.md#secret-scenario)与认知主线共用事件接续。
 
+### 4.10 使用需要隔离的扩展能力
+
+活动需要解析一种不可信格式，现有能力不足时可提交候选构建与试验。宿主先核对实现、用途、材料及隔离要求，在合格环境中准备、运行并登记产物；Self 等待结果期间仍可处理其他输入。产物默认以投影返回，解析结果须核对来源，试验成功不自动授予生产权限。缺少合格环境时，活动可改用已有能力、缩小范围或说明未完成部分，不在普通环境重跑候选。
+
 <a id="cognition"></a>
 
 ## 5. 主体、持续认知与协作
@@ -827,6 +836,24 @@ flowchart LR
 
 选择该方案是为了复用既有执行与能力机制，使能力构建服务于完整任务；不采用遇到问题就生成新工具、默认全量复制主体、无限创建试验分支或把构建通过视为已经学会。能力种类可开放扩展，具体效果仍受模型、环境、资源、权限及采用证据约束。对象和调用规则见[运行协议](docs/runtime-protocol.md#capability-lifecycle)，试验分层见[沙箱](docs/sandbox-evaluation.md#test-scopes)，跨语言接入及资料边界集中于[工程参考](docs/engineering-reference.md#capability-toolchain)。
 
+<a id="isolated-execution"></a>
+
+### 6.5 预制隔离执行与高风险能力
+
+客户端默认提供受控隔离执行的预制契约，实际执行环境按需装配。环境查询、准备与启动、状态查询、停止和结果收集沿原能力入口处理；普通能力请求也可由宿主自动选择合格环境，Self 无需自行组织隔离机制。环境可选不代表执行要求可选：未装配时，主体初始化、交流、记忆、管理及符合条件的既有能力仍可运行，需要隔离的操作则报告能力不足。
+
+隔离要求绑定具体实现、用途与请求，由宿主结合当前策略核对。第三方或动态生成的可执行候选、通用命令、依赖脚本，以及处理不可信复杂输入或执行高风险远程操作的实现，覆盖准备、构建、试验与运行全过程；不能只按本地／远程或接口名称分类。受信预制能力保留适合其用途的普通路径，包装、更名和功能测试通过不取消原限制。
+
+| 责任 | 边界 |
+| --- | --- |
+| 执行隔离 | 限定可读材料、可写产物、外部访问与资源投入；所需约束无法满足时不进入该执行 |
+| 业务授权与机密使用 | 按操作、用途、当前身份及实现资格单独核对；隔离不授予现实动作权限或 Secret 原值访问 |
+| 沙箱与评价 | 决定试验状态、替代能力、比较与采用；真实任务也可隔离执行，独立试验状态不等于已满足全部执行限制 |
+
+执行对象关联原 Operation、任务及父预算，可以承载同一范围内的多次调用。不同用户、试验分支或信任范围默认不共享可变环境；有状态资源保持原实现与运行归属。止动请求、正式任务控制、实际停止及远端效果仍分别记录，环境失效不触发普通路径重跑。独立远端服务的内部执行由其契约说明，本地隔离不证明远端已隔离，也不能撤销已发生的外部动作。
+
+选择该方案是为了约束能力扩展的影响范围，同时保留最小运行环境。不采用全能力强制隔离、每次调用重建环境、环境缺失后自动降级或把隔离成功视为实现可信。完整[逻辑契约](docs/runtime-protocol.md#isolated-execution)、[管理入口](docs/management-workspace.md#execution-environments)、[评价规格](docs/sandbox-evaluation.md#isolated-execution-evaluation)与[工程承载及资料](docs/engineering-reference.md#container-execution)分别维护；隔离机制不构成任意程序绝对安全的保证。
+
 <a id="execution"></a>
 
 ## 7. 提交、动作、依赖与预算
@@ -955,7 +982,7 @@ Operation 描述一次工作及其尝试；Effect 跟踪预期或可能发生的
 
 试验报告保存模式、版本、输入可见范围、环境假设、逐步产物、失败、终止原因与真实用量。真实主体可以记住“进行过这个试验”并读取结论；模拟观测和情感经历不变成现实人物事实。可采用的是带来源、适用条件和评阅依据的经验／产物候选，不是整包状态合并；代码候选仍走既有验证与采用。完整设计、选择理由和适用边界见[沙箱专题](docs/sandbox-evaluation.md)。
 
-沙箱的逻辑约束是状态归属、信息范围和作用路径独立，所有入口均受试验范围与预算控制。独立上下文并不足以证明这些约束已满足；完整沙箱及其资源控制尚未实现验证。当前用途是受控认知评估，不承诺隔离任意恶意程序。
+沙箱的逻辑约束是状态归属、信息范围和作用路径独立，所有入口均受试验范围与预算控制。需要隔离的候选另外使用[受控执行能力](#isolated-execution)；试验副本与执行环境分别装配，独立上下文不证明全部约束已满足。完整沙箱及其资源控制尚未实现验证，不承诺隔离任意恶意程序。
 
 <a id="capability-evaluation"></a>
 
@@ -1093,6 +1120,8 @@ flowchart LR
 
 完整[契约](docs/runtime-protocol.md#prebuilt-library)、[管理](docs/management-workspace.md#prebuilt-management)和[评价](docs/sandbox-evaluation.md#prebuilt-evaluation)分别维护。
 
+[受控隔离执行](#isolated-execution)属于默认提供契约、按需装配环境的预制能力。Self 可选择是否开展依赖它的工作，不能通过不用预制入口绕过宿主对同一操作的强制执行条件。
+
 <a id="decisions"></a>
 
 ## 10. 逻辑取舍与证据边界
@@ -1108,6 +1137,7 @@ flowchart LR
 | 完整管理与人工干预 | 所有受管理对象有管理入口；表单／高级编辑共用对象，修改沿原状态所有者执行；来源、影响、生效及结果可见 | [管理设计](docs/management-workspace.md)；配置语义与官方资料支持此选择，未实现或评测界面；不采用仅只读面板、模型代理全部管理或通用表编辑 |
 | 规范化热加载与函数调用 | 采用：受约束模块、类型推导及结构化注释生成调用／表单／蓝图描述，在调用边界统一切换 | [编写契约](docs/runtime-protocol.md#managed-functions)；减少手写适配与任意栈恢复需求，具体生成工具尚未实现 |
 | 能力构建与采用 | 按需复用、构建、分层试验和按适用范围采用；接口与实现分离，宿主管理持续运行 | [能力闭环](#capability-development)；既有库 API 与工具链资料支持机制，未验证自动构建成功率或任务收益 |
+| 可选隔离执行 | 预制入口随客户端提供，实际环境可选；高风险能力须满足执行条件，缺失时拒绝该操作，主体及其他合格能力继续运行 | [隔离执行](#isolated-execution)；官方资料支持分层约束，执行隔离不替代授权、机密保护或试验状态隔离，未取得本项目隔离与性能实测 |
 | 数据责任 | 当前状态、必要过程记录、原始资源、派生索引和计算缓存分开 | 生命周期和用途不同；局部机制证据不能代替完整任务效果 |
 | 检索与公共 API | 查询目的、生成向量、索引维护与候选核对分责 | 公共契约为设计选择，能力差异显式保留；不预设检索收益；[详细契约](docs/runtime-protocol.md#capability-api) |
 | 核心／任务解耦与外部控制 | 主体、任务、认知执行和外部操作分责；长工作独立管理，控制台及获授权审计可直接阻断／中止，请求发出、正式接纳和实际停止分别报告 | [整体机制](#core-task-control)；mini-go 执行与取消接口支持接入，核心响应及完整控制尚未端到端验证 |
@@ -1152,7 +1182,7 @@ flowchart LR
 | 默认整段答复缓存、每轮清空材料或重复核算 | 缓存需符合版本、用途和范围，有效已读材料可保留；命中不等于少推理或正确 |
 | 只靠测试提示构成沙箱、试验状态整体合并 | 受控能力和独立状态须由宿主装配，模拟动作不能成为真实执行请求 |
 | 单一总分、自评分或一次通过就默认采用 | 覆盖、评价可信度与随机波动不同；使用分能力比较和独立门槛，不能以未知代替无退化 |
-| 当前承诺任意恶意原生程序强隔离 | 当前受控能力评估的用途不覆盖这一保证，若需求出现须另论证 |
+| 将可选隔离环境视为任意程序绝对安全的保证 | 隔离依赖实际可强制执行的约束及其适用范围；不自动授予业务权限、实现信任或远端控制能力 |
 | 唯一参考路径或仅最终答案作为完整任务标准 | 合理替代路径应有效，必要过程责任仍须核对；报告 015 的控制揭示两种简化规则的误判 |
 | 将来源更正一概解释为原推理错误 | 当时依据、当前事实和变化原因不同，最新字段正确也不能代替历史解释核对 |
 | 最终状态正确就忽略过早完成、压低生成上限就算节省 | 报告 016／017 暴露过程责任与额度问题；提示不足以代替接纳核对，投入调整未见跨任务一致收益 |

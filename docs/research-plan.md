@@ -1,6 +1,6 @@
 # 设计决策与适用边界
 
-用途：设计决策台账｜更新：2026-09-21。
+用途：设计决策台账｜更新：2026-09-26。
 
 [总设计](../DESIGN.md#validation) · [文档索引](README.md) · [资料依据](whole-system-evidence.md#design-closure)
 
@@ -10,7 +10,7 @@
 | --- | --- |
 | 总体状态 | [当前范围](#research-status) · [状态定义](#closure-status) · [完整任务](#whole-system) · [基础设计](#remaining-questions) · [用途配置](#deferred) |
 | 资源与扩展 | [统一资源契约](#unified-resources) · [管理工作台](#management-extension) · [能力扩展](#capability-extension) · [Node.js 补充](#node-rpc-extension) · [主动学习](#active-learning-extension) |
-| 个体与控制 | [初始化与迁移](#initialization-extension) · [预制能力库](#prebuilt-extension) · [任务控制](#task-control-extension) · [架构一致性](#architecture-consistency) |
+| 个体与控制 | [初始化与迁移](#initialization-extension) · [预制能力库](#prebuilt-extension) · [隔离执行](#isolated-execution-extension) · [任务控制](#task-control-extension) · [架构一致性](#architecture-consistency) |
 | 维护 | [后续维护](#next-steps) |
 
 <a id="research-status"></a>
@@ -26,7 +26,7 @@
 | 状态 | 适用对象 | 含义 |
 | --- | --- | --- |
 | 设计约束 | 统一主体、强自主、统一事件、投影、完整管理、可信机密输入等系统要求 | 必须在架构与专题保持一致；不表示已实现 |
-| 已定设计 | 基础机制、统一资源契约，以及既定的编写契约、调用边界热加载、能力构建与多语言接入、主动学习扩展及强度控制、提示词初始化与个体自迁移、客户端预制能力库、核心／任务解耦及外部控制、跨契约规则 | 已有资料或局部证据支持，可作为继续设计及未来实现的依据 |
+| 已定设计 | 基础机制、统一资源契约，以及既定的编写契约、调用边界热加载、能力构建与多语言接入、主动学习扩展及强度控制、提示词初始化与个体自迁移、客户端预制能力库、可选隔离执行、核心／任务解耦及外部控制、跨契约规则 | 已有资料或局部证据支持，可作为继续设计及未来实现的依据 |
 | 设计建议 | 管理工作台中尚未单独确认的副本重建细则 | 已提出方案，具体继承与重建规则尚未最终确定 |
 | 用途配置 | 模型、设备、预算、联系窗口和评价门槛等 | 随具体用途确定，不是未关闭架构问题 |
 | 历史证据 | 报告、脚本、输入、失败与原始数据 | 仅支持其固定条件，不是当前任务队列 |
@@ -178,6 +178,23 @@
 
 固定提交的[库依据](go-mini-integration.md#prebuilt-library-facts)支持源码装配、文档与语言工具接入；维护归属属于设计约束，初始化收益属于工程判断。具体函数清单、模块前缀和参数在实际接入时确定，不新增待执行实验；当前没有产品实现或新增效果实测。
 
+<a id="isolated-execution-extension"></a>
+
+## 可选隔离执行的设计范围
+
+隔离执行是默认提供契约、按需装配环境的预制能力。高风险能力按实际实现、用途和请求匹配强制限制；环境缺失时主体及其他合格能力继续可用，受影响操作不能自动回落普通路径。该机制已定，尚未实现或运行本项目隔离验证。
+
+| 设计范围 | 采用方案及适用边界 |
+| --- | --- |
+| 准入与生命周期 | [总设计](../DESIGN.md#isolated-execution)、[运行契约](runtime-protocol.md#isolated-execution)；覆盖准备、构建、试验和正式运行，绑定原操作及预算，不按本地／远程或接口名称豁免 |
+| 信息、机密与权限 | 共同资源属性、情境投影及原所有者保持；外部发送和 Secret 使用另行授权，隔离不授予实现信任或原值访问 |
+| 可选依赖及替代路径 | 需要隔离时缺失即拒绝该执行，可换合格能力或缩小范围；增强要求不能降为较弱环境 |
+| 承载选择 | [工程参考](engineering-reference.md#container-execution)采用可选容器提供者，Linux 优先 Rootless Docker，预留 gVisor 增强隔离；具体运行时版本、配置及资源额度按实际用途确定 |
+| 管理与评价 | [工作台](management-workspace.md#execution-environments)显示所需与有效条件及实际停止；[评价规格](sandbox-evaluation.md#isolated-execution-evaluation)区分环境检查、隔离效果与认知质量，未新增实验成绩 |
+| 资料及边界 | [2026-09-26 官方资料](engineering-reference.md#container-sources)支持机制和环境前提；不证明完整隔离、远端控制、平台兼容或性能，完整 AGI 副本重建仍保留独立建议状态 |
+
+不采用强制所有能力容器化、每次请求重建环境、向候选开放引擎管理权或以容器存在证明绝对安全。具体兼容性和性能属于接入条件，不自动形成当前待执行任务。
+
 <a id="task-control-extension"></a>
 
 ## 核心／任务解耦与外部控制的设计范围
@@ -203,6 +220,7 @@
 | 范围 | 最终采用方案及理由 | 排除的解释与唯一正文 |
 | --- | --- | --- |
 | 资源与类型操作 | 公共属性、情境投影、内容表示和派生关系共用，原所有者维护状态；Secret 保留专用通路，操作绑定当前身份与范围 | 不把引用当授权，不以读取／执行／交付混用证据；[共同定义](projection-input-and-compute.md#resource-contract)、[操作](runtime-protocol.md#resource-operations) |
+| 隔离环境与可选能力 | 执行环境可选装配，必要限制按具体实现、用途和操作强制核对；任务及认知沙箱共用预制执行契约 | 不在缺失时降级，不把隔离当授权、实现信任或副本完整证明；[隔离执行](runtime-protocol.md#isolated-execution) |
 | 控制对象与传播 | Episode 是持续活动，Task 是活动内可选任务安排，Operation 是已接纳工作；当前尝试另有执行身份。控制携带类型与传播范围，认知中断和任务停止各有归属 | 不使用含义不明的“任务 ID”，不因认知被取消而自动终止独立操作；[生命周期与控制](runtime-protocol.md#core-task-lifecycle) |
 | 步骤与操作接纳 | 步骤内通过独立入口接纳请求，保留稳定请求键与回执；最终提案引用已有操作并接纳剩余意图。支持先读工具结果再作判断，也保留失败前已发生的成本和效果 | 不重复派发，不用最终提交失败抹去独立工作；[时序](runtime-protocol.md#step-operation-admission) |
 | 统一主体的公共决定 | 私有 Mind 状态、受委托活动决定与 Self 公共提案分开；指定既有心智承担整合，按证据与责任裁定，未决保留原公共状态 | 不设永久最高人格、不以写入先后或多数票取代公共决定；[公共整合](whole-system-design.md#public-decisions) |

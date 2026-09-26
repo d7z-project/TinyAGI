@@ -1,6 +1,6 @@
 # 工程选型与部署参考
 
-用途：工程参考（与逻辑设计分开维护）｜更新：2026-09-21。
+用途：工程参考（与逻辑设计分开维护）｜更新：2026-09-26。
 
 [项目入口](../README.md) · [文档索引](README.md) · [逻辑总设计](../DESIGN.md) · [逻辑契约](runtime-protocol.md) · [go-mini 库行为](go-mini-integration.md)
 
@@ -10,9 +10,9 @@
 | --- | --- |
 | 总体承载 | [物理部署](#physical-architecture) · [软件依赖](#software-modules) · [技术栈](#technology-stack) |
 | 主体与执行 | [初始化与兼容](#prompt-bootstrap) · [预制能力库](#client-library) · [任务控制](#task-execution) · [热加载工具](#managed-function-tooling) |
-| 能力扩展 | [工具链与运行](#capability-toolchain) · [Node.js 与 npm](#node-rpc-integration) · [主动学习](#active-learning-integration) · [实现准入](#implementation-admission) |
+| 能力扩展 | [工具链与运行](#capability-toolchain) · [Node.js 与 npm](#node-rpc-integration) · [主动学习](#active-learning-integration) · [实现准入](#implementation-admission) · [容器执行](#container-execution) |
 | 数据与服务 | [资源类型接入](#resource-integration) · [模型维护与机密](#maintenance-secrets) · [向量服务](#vector-service) · [存储](#persistence) · [个体状态](#individual-state-storage) |
-| 接入与依据 | [库接入](#vm-deployment) · [一手依据](#stack-sources) · [向量资料](#vector-sources) |
+| 接入与依据 | [库接入](#vm-deployment) · [一手依据](#stack-sources) · [向量资料](#vector-sources) · [容器资料](#container-sources) |
 
 <a id="physical-architecture"></a>
 
@@ -23,6 +23,8 @@
 核心采用以下承载约束：TinyAGI 核心单机、单二进制、单宿主进程；SQLite 保存业务状态，本地文件保存原始资源。独立向量数据库是能力依赖，本地与远程均支持，Qdrant 为当前默认选择。Go 承担宿主机制，go-mini 组织认知。核心之外允许宿主管理的本地能力子进程、原生构建产物、Node.js 程序包及 Go／Rust／Node.js（npm）工具链与运行依赖；单二进制描述核心发布物，不表示整个运行环境只有一个文件或进程。子进程不拥有第二份主体真值，也不构成 TinyAGI 集群。
 
 不采用 TinyAGI 集群、Kubernetes、节点接管、服务发现、对象存储或独立业务数据库，以保持单机核心和本地状态的边界。嵌入向量引擎及 SQLite 向量扩展暂缓，原因是当前选择通过 SDK 接入独立向量服务，并非性能实验证伪。外部模型、工具和远程向量服务不改变核心部署约束。
+
+核心默认提供受控容器执行的契约与适配入口，容器引擎、镜像和工具链按需配置，缺失不阻止核心启动。需要隔离的能力实现运行于合格容器，其他受信能力保留普通路径；容器不拥有主体真值，也不要求部署 TinyAGI 集群。工程接入优先 Linux 上的 Rootless Docker，增强隔离预留 gVisor，具体条件见[容器执行](#container-execution)。
 
 ### 1.1 物理部署总图
 
@@ -52,9 +54,10 @@ flowchart TB
             Control --> Data
             Jobs --> TaskVM
             TaskVM -->|"结果及失败"| Events
-            Ext["构建适配、子进程管理与 MRPC 绑定"]
+            Ext["构建、隔离执行适配与 MRPC 绑定"]
             Jobs <--> Ext
             Ext --> Data
+            Access["受控出站、认证绑定与返回过滤"]
             Events["事件接入、分发、订阅与关联"]
             Data["数据访问、单写入通路与维护入口"]
             Trials["评估模块：测试与基线、沙箱装配、评阅与比较"]
@@ -73,12 +76,15 @@ flowchart TB
         Files["本地文件：媒体、证据、代码和导出"]
         VectorDB["本地向量服务（部署选项）<br/>独立进程／容器，Qdrant 当前默认"]
         VectorFiles["本地向量服务自有数据目录"]
-        Toolchain["可选 Go／Rust 工具链与 Node.js／npm：受控准备、构建与测试"]
-        Workers["受管理能力子进程：Go／Rust／Node.js 服务或一次性程序"]
-        Ext -->|"启动、观察与结束"| Toolchain
+        ContainerRuntime["可选容器引擎：Rootless Docker<br/>增强运行时按要求装配"]
+        Containers["能力容器：Go／Rust／Node.js<br/>准备、构建、测试及运行"]
+        Workers["普通受管理进程：仅承载满足普通执行条件的能力"]
+        Ext -->|"受控创建、观察与结束"| ContainerRuntime
+        ContainerRuntime --> Containers
+        Ext <-->|"受限 MRPC 与产物收集"| Containers
+        Containers <-->|"按用途开放的访问"| Access
         Ext -->|"启动、观察与结束"| Workers
         Ext <-->|"MRPC：本地 Unix socket 或回环连接"| Workers
-        Toolchain -->|"固定构建产物"| Files
         Devices["本机设备／驱动／外部推理组件（含 KV）"]
         Data --> DB
         Data --> Files
@@ -93,7 +99,8 @@ flowchart TB
     Jobs -->|"可创建／管理来源"| Sources
     Sources -->|"经适配器进入统一事件通路"| Entry
     User <--> Entry
-    Jobs <--> API
+    Jobs <-->|"符合条件的受信适配"| API
+    Access <--> API
 ```
 
 TinyAGI 自有逻辑模块和事件机制映射到进程内组件，核心不内置闹钟业务模块。外部通知源可位于本机的独立程序、操作系统设施或远程服务，经适配器接入；图中置于宿主进程之外，不要求它必须在远端。SQLite 保存任务责任、来源引用、订阅和必要事件，通知对象与计时由相应提供者管理。宿主执行期限和预算控制仍属于运行机制。模型与 KV 交给外部推理组件，选用库时可在宿主内运行，使用已有运行时／API 时属于能力接入。发布单个 TinyAGI 可执行文件；当前完整初始化提示词、预制库源码与接口资料、固定引导支持及管理静态资源可内嵌，各 Self 生成的认知源码、修改产物与用户数据写本地目录，不引入内部服务集群。
@@ -172,7 +179,8 @@ flowchart TB
 | Web 管理工作台 | `net/http` 管理 API＋内嵌前端产物；运行时无需独立 Node 服务 | 完整管理入口沿已有状态所有者处理；组件化前端为候选，类型／注释驱动描述与适配已纳入设计；具体前端组件未选定，工具未实现 |
 | 契约与序列化 | Go 类型＋版本化 JSON；需要声明式约束时明确 JSON Schema 方言／子集 | `encoding/json` 解析不等于 schema 验证；类型／范围／未知字段／语义分别核对；校验库待真正契约集合确定 |
 | 观测 | `log/slog` 结构化运行日志＋业务 Trace／Operation／Outcome 记录 | 日志不自动包含材料全文、凭据或私密模型载荷；业务依据按访问范围读取，暂不要求外部日志／指标服务 |
-| 测试与沙箱 | 局部 go-mini 实例、能力组合与 AGI 副本分层；原生构建／测试使用受控执行环境 | 生产与试验的状态／能力由装配限定；原生隔离按操作系统能力接入，不引入集群，不把独立进程当成完整沙箱 |
+| 测试与沙箱 | 局部 go-mini 实例、能力组合与 AGI 副本分层；需隔离的原生构建／测试复用容器执行 | 试验状态与系统执行隔离分别装配；容器不替代完整副本或评价环境 |
+| 可选容器执行 | Linux 优先接入 Rootless Docker，预留 gVisor 增强隔离；公共契约独立于具体引擎 | 默认提供适配入口，运行时按需装配；实际约束须满足请求，缺失不降级到宿主进程；依据见[容器资料](#container-sources) |
 
 [宿主组合实验](experiments/014-host-composition.md)已验证固定 go-mini、Go 标准库、modernc SQLite 和本地文件在本机组成无 CGO 可执行文件，并经确定提供者完成两段活动；这支持当前默认，未测试真实模型、生产负载或跨平台。
 
@@ -362,7 +370,7 @@ Go `os/exec` 提供启动、管道、等待和取消基础；面向 TinyAGI 的�
 
 #### 构建环境、机密与输出
 
-文件读取、可写目录、网络、环境变量及实际资源限制覆盖依赖处理、代码生成、构建、测试和运行。Cargo 构建脚本及包准备中获准的脚本执行也在控制范围内，控制不能等到最终能力程序启动才开始。隔离由操作系统和受信执行适配提供；当前不指定某个隔离产品，不将进程分离或 VM 限额当作任意原生代码的完整沙箱证明，也不因此重开底层故障实验。执行适配器须声明实际可强制执行的文件、网络、进程、资源与输出限制；宿主按候选所需约束选择可用环境，无法满足则拒绝构建／运行该候选，不降级到普通生产进程。
+文件读取、可写目录、网络、环境变量及实际资源限制覆盖依赖处理、代码生成、构建、测试和运行。Cargo 构建脚本及包准备中获准的脚本执行也在控制范围内，控制不能等到最终能力程序启动才开始。需要隔离的候选统一使用[受控容器执行](#container-execution)，不将进程分离或 VM 限额当作完整隔离证明。适配器须声明实际可强制执行的文件、网络、进程、资源与输出限制；宿主按候选所需约束选择可用环境，无法满足则拒绝构建／运行该候选，不降级到普通生产进程。
 
 功能采用记录与实现信任记录分开；后者绑定受信维护者或既定发布策略、来源及产物摘要、适用用途与敏感能力。接口稳定、MRPC 类型正确、沙箱通过或候选自称可信都不能自动授予原值访问；新产物按原发布策略重新核对，不强制已有自动授权范围每次再人工审批。
 
@@ -488,6 +496,45 @@ SDK 路线的代价是服务运行与版本维护、调用开销及索引更新�
 
 报告 013 的词法查询和报告 014 的宿主组合均不覆盖此服务。当前已依官方 SDK、过滤检索与单节点部署契约确定 Qdrant 默认方案；比较依据是接入与职责适配，不声称最快或已经测得任务收益。[设计台账](research-plan.md#remaining-questions)记录 记忆与能力接入的决定与配置责任，该选型不包含新增部署实测。
 
+<a id="container-execution"></a>
+
+### 3.11 可选的原生容器执行能力
+
+容器执行适配承载[预制隔离执行契约](runtime-protocol.md#isolated-execution)。稳定入口与宿主适配随客户端维护；引擎、基础镜像和工具链是可选依赖，不自动安装、提升系统权限或随主体初始化启动。首先面向 Linux 接入 Rootless Docker，公共接口保留其他合格提供者的扩展位置；不要求同时维护多种引擎，也不引入集群控制面。
+
+宿主负责生成受约束的执行请求并调用引擎，Self 只提交用途、能力及资源需求。Docker socket、任意引擎 API、特权参数和宿主挂载配置不暴露给候选。高风险远程调用的本地实现、不可信解析、动态 Go／Rust／Node.js 程序、Shell 及依赖脚本在容器内运行；普通路径仅承载满足其准入条件的受信能力，不能通过直接 `os/exec`、FFI 或 MRPC 绑定绕过检查。远端服务本身的运行位置不由本地容器控制。
+
+#### 默认约束与实际能力检查
+
+| 范围 | 宿主装配要求 |
+| --- | --- |
+| 系统权限 | 优先无特权引擎和非特权容器用户，裁减 Linux capabilities，启用适用的 seccomp 与系统访问控制；不开放特权容器、宿主命名空间或容器管理 socket |
+| 文件与产物 | 只读基础文件系统，按许可提供输入，分配独立可写工作区；不挂载主体数据库、完整用户目录或宿主根目录；取出产物仍经资源入口核对 |
+| 网络与认证 | 无需联网时禁用网络；需要时按目标、用途与操作装配受控出站路径，限制非授权内网及宿主入口；代理环境变量本身不算强制隔离，不保留绕过受控路径的直连 |
+| 资源投入 | 核对并配置 CPU、内存、进程数、期限和可写空间的有效上限；所需限制不可执行时报告不足，不把参数已设置当作已生效 |
+| 实现与供应来源 | 镜像、代码、依赖锁定输入、运行时及执行配置关联具体修订或摘要；摘要标识内容，不单独授予来源信任；准备及构建脚本与最终运行同受限制 |
+| 输出与机密 | 不继承宿主完整环境和凭据；认证优先由受信适配器按用途代理，原值注入仍须实现资格及用户授权；日志先过滤，输出作为资源投影返回 |
+
+Rootless 降低引擎与容器依赖宿主 root 权限的范围，但不自动提供全部限额。环境检查须报告实际内核、引擎、cgroup 与控制器条件，网络及文件限制同样按所选提供者核对；约束不满足时该执行不可用。具体开关、额度及运行时版本由用途配置确定，不能把已安装 Docker 当作全部请求均可接纳。
+
+构建适配器也不能通过向候选挂载引擎 socket 获得便利。依赖下载、包生命周期脚本和编译安排在相应容器执行范围内，正式运行使用已准备产物；构建阶段的联网资格不自动延续到运行阶段。容器取得的原始材料须满足外部处理许可，执行组件加载程序或使用材料不等于模型已经读过它们。
+
+#### 调用、复用与停止
+
+一次构建、任务或受管理服务会话可对应一个持续执行环境，多次 MRPC 调用复用原实现和作用范围；不按每个 RPC 重建容器。不同用户、试验分支或信任范围默认不共享可变环境。传输适配只开放所需业务通道，并绑定原操作身份及回调范围，不开放宿主通用管理端点；容器环境的传输装配不作为既有 go-mini 库已验证的行为。
+
+宿主保留容器运行身份、原 Operation、固定产物、实际限制、用量及收尾状态。停止按任务范围传递到所属容器工作，清理子工作和临时资源；控制请求发出、持久接纳、进程停止及远端效果核对分别显示。共享受信服务只结束目标任务的使用，不以中止一次调用关闭其他任务。引擎失联时记录实际未知状态，不宣称全部停止，也不转到宿主重新执行。
+
+资源镜像及可共享的只读缓存按来源、修订和处理范围复用，工作目录与可变会话按原范围隔开。产物收集、日志登记和清理属于原执行责任，仍受限额约束；容器退出不自动表示任务已交付或全部临时资源已回收。管理页面见[执行环境](management-workspace.md#execution-environments)。
+
+#### 选择理由与替代项
+
+采用容器是为动态能力提供可管理的文件、网络、权限和资源边界，同时复用现有运行生态；Rootless Docker 是首个工程接入选择，未由性能对照得出最优结论。成本包括额外运行时、镜像维护、启动及兼容性限制。其他引擎可作为同一契约的后续提供者，当前不同时展开实现。
+
+需要进一步减少不可信程序接触宿主内核时，预留 gVisor 等增强隔离提供者。增强环境有自己的兼容性和系统调用开销，必须按实际组合报告能力；不预设它与任意 Rootless 配置均可直接组合。任务要求增强隔离而环境缺失时拒绝该执行，不降为普通容器。
+
+不采用全能力强制容器化、把 TinyAGI 核心一并迁入容器作为前提、每次调用新建容器或缺失时回落宿主；这些方式分别增加环境依赖、耦合及启动成本，或违背准入要求。资料支持见[来源表](#container-sources)，实际状态及适用边界见[设计台账](research-plan.md#isolated-execution-extension)。
+
 <a id="persistence"></a>
 
 ## 4. 状态与资源的实现映射
@@ -606,6 +653,23 @@ go-mini 是嵌入式认知执行库，宿主提供状态、权限、能力和预
 | [SQLite FTS5](https://www.sqlite.org/fts5.html)，查阅日 §4.3.1／§4.3.4 | unicode61 连续字符 token、trigram 的短查询限制 | 中文检索需按语料验证；建表成功不作为问答／召回成绩 |
 | [JSON Schema Core 2020-12](https://json-schema.org/draft/2020-12/json-schema-core)，方言与 vocabulary | 校验依赖声明的方言和关键字语义 | 各适配器说明支持子集，结构通过不能证明事实／授权 |
 | [Anthropic 工具定义](https://platform.claude.com/docs/en/agents-and-tools/tool-use/define-tools)、[Ollama Chat](https://docs.ollama.com/api/chat)，查阅日在线契约，无固定服务器版本 | 工具 schema、消息／调用结构及返回元数据存在提供者差异 | 模型端口保留工具关联和能力声明；未选定厂商／模型，也未实测这些服务 |
+
+<a id="container-sources"></a>
+
+### 容器执行与隔离的资料依据
+
+查阅日期：**2026-09-26**。以下为当日官方在线文档，未固定本项目运行时发行版，也未运行安装、容器、逃逸或性能实验。来源支持机制与适用条件，实际接入须记录所用系统、引擎、执行配置及其能力。
+
+| 一手来源与定位 | 支持的命题 | 本项目设计推论与边界 |
+| --- | --- | --- |
+| [Docker Engine security](https://docs.docker.com/engine/security/)，namespaces、daemon attack surface、capabilities | 隔离涉及内核、引擎权限和配置；引擎可请求宿主挂载，只有受信调用者应控制它 | 宿主管理引擎入口，候选只获得受约束请求；不暴露管理 socket，不从容器存在推断绝对安全 |
+| [Docker Rootless mode](https://docs.docker.com/engine/security/rootless/)，How it works／Prerequisites | 引擎及容器可在用户命名空间中以非 root 身份运行，有明确系统前提 | Linux 优先采用 Rootless 作为工程接入；减少高权限依赖，不替代文件、网络与资源约束 |
+| [Docker Resource constraints](https://docs.docker.com/engine/containers/resource_constraints/)，默认行为与 Memory／CPU | 容器默认没有自动设置资源上限，限制依赖系统能力与显式配置 | 宿主按请求设置并核对限额，不能因使用容器就假定不会耗尽宿主资源 |
+| [Rootless Tips](https://docs.docker.com/engine/security/rootless/tips/#limiting-resources)，Limiting resources | 文档所述 cgroup 资源控制依赖 cgroup v2、systemd 及实际控制器委托；条件缺失时相关标志可能被忽略 | 环境报告实际可强制执行的约束，不以参数提交成功代替生效；不满足必要条件时拒绝该执行 |
+| [Docker Seccomp security profiles](https://docs.docker.com/engine/security/seccomp/)，默认配置与使用方式 | 系统调用过滤是可配置的限制层，默认配置并不等同禁止全部系统接口 | 保留适用过滤及最小权限，不为使候选运行而自动关闭；具体配置按实际提供者确定 |
+| [What is gVisor?](https://gvisor.dev/docs/)，What does gVisor do／How is this different；[Security Model](https://gvisor.dev/docs/architecture_guide/security/) | 应用内核减少程序直接接触宿主内核的接口，提供 OCI 运行时；存在兼容性及系统调用开销的取舍，仍有安全边界 | 预留增强隔离提供者，不承诺任意程序安全或默认与所有引擎配置兼容；强隔离要求不向较弱环境降级 |
+
+选择容器与 Rootless 优先级属于基于上述资料的工程判断；资料不证明 TinyAGI 的完整约束、远端动作授权、Secret 管线或停止流程已经验证。执行隔离、业务授权与认知沙箱仍分别成立。
 
 <a id="vector-sources"></a>
 

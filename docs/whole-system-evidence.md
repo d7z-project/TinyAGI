@@ -1,6 +1,6 @@
 # 设计依据与实验索引
 
-用途：证据索引｜更新：2026-09-21。
+用途：证据索引｜更新：2026-09-26。
 
 [总设计](../DESIGN.md#decisions) · [文档索引](README.md) · [设计状态与边界](research-plan.md)
 
@@ -77,6 +77,7 @@
 | 意愿、规范、身份、情感 | [交流与情境](interaction-design.md) | [交互设计的资料与边界](interaction-design.md#validation)；[报告 016](#report-016)补充合成人物／受众场景，不提供真实身份或情感效果的保证 |
 | 投影、外部事件源、缓存与沙箱 | [资源](projection-input-and-compute.md)、[沙箱](sandbox-evaluation.md) | 各篇来源表保留具体版本与未测范围；计时夹具不证明核心必须内置闹钟 |
 | 统一资源、Secret 类型及情境投影 | [公共属性与类型规则](projection-input-and-compute.md#resource-contract)、[操作接纳](runtime-protocol.md#resource-operations) | [NIST 属性授权与 W3C 来源模型](projection-input-and-compute.md#resource-evidence)，2026-09-21 查阅；支持概念组织，报告 012／013 不证明完整资源契约或机密隔离已测 |
+| 可选隔离执行与高风险能力 | [准入与运行](runtime-protocol.md#isolated-execution)、[试验分工](sandbox-evaluation.md#isolation) | [容器、Rootless、资源约束与 gVisor 官方资料](engineering-reference.md#container-sources)，2026-09-26 查阅；支持工程选择与适用条件，不是本项目隔离、兼容性或性能实测 |
 | 统一事件与活动接续 | [事件主线](../DESIGN.md#event-driven)、[共同协议](runtime-protocol.md#events) | [CloudEvents 参考与证据边界](runtime-protocol.md#event-sources-evidence)；报告 012／014 为局部流程，016／017 补充受控来源与接续对照；完整体系未测 |
 | 能力评估、回归与采用门槛 | [测试集及基线比较](sandbox-evaluation.md#evaluation-design) | [评估一手依据及查阅日期](sandbox-evaluation.md#evaluation-sources)；报告 011／012／014 仅有局部控制，真实模型能力基线未建 |
 | 逻辑模块、模型端口与工程映射 | [逻辑契约](runtime-protocol.md#software-modules)、[软件与技术选择](engineering-reference.md#software-modules) | [官方依据与版本](engineering-reference.md#stack-sources)、[宿主组合报告](experiments/014-host-composition.md) |
