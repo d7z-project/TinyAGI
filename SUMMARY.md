@@ -28,7 +28,7 @@
 - [文档维护与证据规范](docs/documentation-guide.md)
 - [文档构建、公开范围与 GitHub Pages](docs/documentation-publishing.md)
 
-# 历史实验报告
+# 实验与验证报告
 
 - [报告 001 · 动作恢复的受限状态枚举](docs/experiments/001-effect-recovery.md)
 - [报告 002 · 实际 go-mini 的运行边界实验](docs/experiments/002-vm-continuity.md)
@@ -47,3 +47,4 @@
 - [报告 015 · 完整任务验收契约与真实模型开发对照](docs/experiments/015-task-outcome-contract.md)
 - [报告 016 · 真实模型功能事件验证](docs/experiments/016-functional-events.md)
 - [报告 017 · 任务接续、有限投入与责任退出](docs/experiments/017-continuation-study.md)
+- [报告 018 · go-mini 库回归与跨语言接入](docs/experiments/018-go-mini-library-validation.md)

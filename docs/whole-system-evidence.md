@@ -50,6 +50,7 @@
 | <a id="report-008"></a>008 · [接纳与入账](experiments/008-dispatch-settlement.md) | 提交后确认、持久待办和唯一释放账 | 多个实验库是夹具，不是产品必须拆成多个库 |
 | <a id="report-009"></a>009 · [取消、恢复与冲突](experiments/009-cancel-restore-evidence.md) | 取消竞争、旧快照重复风险和冲突证据需处理 | 依赖给定可信来源与恢复条件，不证明完整灾备 |
 | <a id="report-010"></a>010 · [本地存储与维护](experiments/010-local-storage.md) | 文件先发布后提交、稳定锁对象、维护排空及完整备份；长读影响写入与 checkpoint | 小型 SQLite／Linux 夹具，未测 Go 驱动、完整认知闭环、吞吐或掉电 |
+| <a id="report-018"></a>018 · [go-mini 库回归与接入](experiments/018-go-mini-library-validation.md) | 固定提交下的执行／取消、热更新、缓存、生成绑定及跨语言互通，逐项结果见报告 | 上游库用例及指定工具链；不证明完整主体、机密防泄漏、跨平台发行或性能收益 |
 
 <a id="consistency-basis"></a>
 
@@ -77,6 +78,7 @@
 | 关注、计划与程序复用 | [目标与计划](../DESIGN.md#attention-planning) | [混合主动交互原则](#source-mixed-initiative)、[Plan-and-Act：动态重规划](#source-plan-and-act)、[Voyager：程序积累](#source-voyager) |
 | 来源修订、路由与版本采用 | [来源与能力](../DESIGN.md#knowledge) | [PROV-DM：来源与修订](#source-prov)、[RouteLLM：模型路由](#source-routellm)、[AI Agents That Matter：成本与泛化](#source-agent-evaluation) |
 | 意愿、规范、身份、情感 | [交流与情境](interaction-design.md) | [交互设计的资料与边界](interaction-design.md#validation)；[报告 016](#report-016)补充合成人物／受众场景，不提供真实身份或情感效果的保证 |
+| 计算节约与复用 | [总体选择](../DESIGN.md#resource-efficiency)、[输入与结果](materials-and-context.md#cache) | [提供者、HTTP、Go 与构建工具官方契约](engineering-reference.md#efficiency-sources)支持机制选择；报告 012 的读取结果不证明前缀、完整费用或时延收益 |
 | 投影、外部事件源、缓存与沙箱 | [资料与视图](materials-and-context.md)、[沙箱](sandbox-evaluation.md) | 各篇来源表保留具体版本与未测范围；计时夹具不证明核心必须内置闹钟 |
 | 领域对象、资料与受限视图 | [所有权与关系](materials-and-context.md#domain-objects)、[操作接纳](runtime-protocol.md#domain-operations) | [Microsoft 领域分析、NIST 属性授权与 W3C 来源模型](materials-and-context.md#domain-evidence)，各来源记录适用版本与支持命题；支持职责及关联设计，报告 012／013 不证明全部领域接入已测 |
 | 接纳、授权与记忆纠正闭环 | [接纳前处理](whole-system-design.md#request-intake)、[授权来源](runtime-protocol.md#capability-authority)、[记忆生命周期](whole-system-design.md#memory-lifecycle)、[上下文失效](materials-and-context.md#context-validity)、[交付纠正](whole-system-design.md#delivery-correction) | [NIST 属性授权、RFC 8693 委托与 W3C 来源模型](materials-and-context.md#domain-evidence)；资料支持职责区分，接纳范围、保留及纠正规则属于本项目设计，未作端到端实测 |
@@ -247,7 +249,7 @@
 
 能力构建与接入设计采用 MRPC 多语言绑定、局部实例试验和宿主管理原生程序。go-mini 固定提交、已确认 API 与未确认的子进程服务边界见[库接入记录](go-mini-integration.md#rpc-extension-facts)；Go os/exec 与 Cargo 构建脚本的资料命题、工程推论及未采用项见[工程参考](engineering-reference.md#capability-toolchain)。上述依据来自源码和资料，尚无本项目完整能力构建流程的实测结果。
 
-扩展 Node.js（npm）能力端。新增来源为 go-mini 固定提交的 [TypeScript 生成、Node RPC SDK 与双向互通测试源码](go-mini-integration.md#javascript-rpc-facts)，只支持库接口与接入方式；源码中存在测试不等于本次已运行。程序包／依赖固定与受管理 Node 服务属于[工程设计](engineering-reference.md#node-rpc-integration)，无新增安装、构建、模型或互通实验成绩。
+Node.js（npm）能力端的接口依据来自 go-mini 固定提交的 [TypeScript 生成与 Node RPC SDK](go-mini-integration.md#javascript-rpc-facts)；更新后的实际构建和互通范围见[报告 018](experiments/018-go-mini-library-validation.md)。程序包／依赖固定与受管理 Node 服务属于[工程设计](engineering-reference.md#node-rpc-integration)，库用例不证明完整能力构建与采用流程已实现。
 
 <a id="initialization-migration-sources"></a>
 
@@ -269,9 +271,9 @@
 
 ### 核心与任务解耦、外部中止的依据
 
-主体／任务生命周期解耦与控制台、授权审计等外部控制。只读核对 mini-go 固定提交的前台入口、异步等待、InterruptHandle、scope、实例故障及 RPC 取消，源码和测试用例身份见[库记录](go-mini-integration.md#task-control-facts)。同日查阅 [Go context 官方文档](https://pkg.go.dev/context#pkg-overview)（页面所示 go1.27.1），支持取消沿派生上下文传播的命题；宿主据此分别管理短请求、已接纳任务及关闭生命周期。
+主体／任务生命周期解耦与控制台、授权审计等外部控制。mini-go 前台入口、异步等待、InterruptHandle、scope、实例故障及 RPC 取消的源码依据见[库记录](go-mini-integration.md#task-control-facts)，当前库回归范围见[报告 018](experiments/018-go-mini-library-validation.md)。[Go context 官方文档](https://pkg.go.dev/context#pkg-overview)（所引用页面版本 go1.27.1）支持取消沿派生上下文传播的命题；宿主据此分别管理短请求、已接纳任务及关闭生命周期。
 
-资料支持有界执行、受控取消与分责接入，任务授权、阻断状态及解除流程是 TinyAGI 设计。原[报告 014](experiments/014-host-composition.md)支持实际异步 FFI 和顺序跨实例接续，不支持完整并发控制结论；库测试源码阅读也不写成新实测通过。未运行测试、模型或新实验，响应性与取消延迟未测。采用决定见[台账](research-plan.md#task-control-extension)，工程推论见[接入映射](engineering-reference.md#task-execution)。
+资料与库回归支持有界执行、受控取消与分责接入，任务授权、阻断状态及解除流程是 TinyAGI 设计。原[报告 014](experiments/014-host-composition.md)支持实际异步 FFI 和顺序跨实例接续；[报告 018](experiments/018-go-mini-library-validation.md)补充当前库的执行、取消和并发回归，二者均不支持完整主体控制效果或通用取消延迟保证。采用决定见[台账](research-plan.md#task-control-extension)，工程推论见[接入映射](engineering-reference.md#task-execution)。
 
 方案状态及适用边界统一见[设计台账](research-plan.md#remaining-questions)。
 

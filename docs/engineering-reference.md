@@ -11,7 +11,7 @@
 | 总体承载 | [物理部署](#physical-architecture) · [软件依赖](#software-modules) · [技术栈](#technology-stack) |
 | 主体与执行 | [初始化与兼容](#prompt-bootstrap) · [预制能力库](#client-library) · [任务控制](#task-execution) · [热加载工具](#managed-function-tooling) |
 | 能力扩展 | [工具链与运行](#capability-toolchain) · [Node.js 与 npm](#node-rpc-integration) · [主动学习](#active-learning-integration) · [实现准入](#implementation-admission) · [容器执行](#container-execution) |
-| 数据与服务 | [领域接口与共用承载](#domain-integration) · [模型维护与机密](#maintenance-secrets) · [认知辅助组件](#optional-cognition-components) · [检索提供者](#retrieval-providers) · [存储](#persistence) · [个体状态](#individual-state-storage) |
+| 数据与服务 | [领域接口与共用承载](#domain-integration) · [模型维护与机密](#maintenance-secrets) · [认知辅助组件](#optional-cognition-components) · [计算节约接入](#efficiency-integration) · [检索提供者](#retrieval-providers) · [存储](#persistence) · [个体状态](#individual-state-storage) |
 | 接入与依据 | [库接入](#vm-deployment) · [一手依据](#stack-sources) · [检索接口资料](#retrieval-sources) · [向量资料](#vector-sources) · [容器资料](#container-sources) |
 
 <a id="physical-architecture"></a>
@@ -193,6 +193,8 @@ flowchart TB
 
 [宿主组合实验](experiments/014-host-composition.md)已验证固定 go-mini、Go 标准库、modernc SQLite 和本地文件在本机组成无 CGO 可执行文件，并经确定提供者完成两段活动；这支持当前默认，未测试真实模型、生产负载或跨平台。
 
+执行库更新另以[当前固定提交](go-mini-integration.md#current-verification)核对，库回归及跨语言互通结果见[报告 018](experiments/018-go-mini-library-validation.md)。报告 014 的工具链和组合成绩保持原条件；新库用例不替代完整宿主组合重测。
+
 已测构建目标是本机 Linux/amd64 的最小文本闭环；Windows／macOS、本机 GPU／语音库、跨机型安装与真实容量留到明确用途后验证。单二进制目标不等于把权重、显卡驱动、CA／操作系统环境或第三方工具都内嵌。
 
 `mattn/go-sqlite3` 暂不作默认，主要理由是其 CGO／C 编译依赖与当前简化构建的偏好；它仍可构建单二进制，不是违反架构或被性能实验否定。若实际任务暴露驱动负担、扩展需求或目标平台问题，再在相同业务负载比较。向量服务的选型不重新打开业务状态数据库选型。
@@ -210,7 +212,7 @@ FTS5 默认 unicode61 以连续 token 字符分词，不是中文语义分词器
 
 执行库的状态重建、旧帧保留和不兼容变更依据集中在[go-mini 读取记录](go-mini-integration.md#management-library-review)。
 
-提交切换的契约见[管理工作台](management-workspace.md#apply)。设置定义、认知程序与蓝图可设计为热调整对象；修改核心宿主原生实现属于软件更新；按契约受管理的原生能力采用产物准备与 MRPC 绑定切换，见[能力工具链](#capability-toolchain)。未运行补丁、主体级试验或迁移测试。
+提交切换的契约见[管理工作台](management-workspace.md#apply)。设置定义、认知程序与蓝图可设计为热调整对象；修改核心宿主原生实现属于软件更新；按契约受管理的原生能力采用产物准备与 MRPC 绑定切换，见[能力工具链](#capability-toolchain)。库补丁与绑定行为有局部测试依据，完整管理提交、主体级试验和人物迁移尚无端到端成绩。
 
 <a id="prompt-bootstrap"></a>
 
@@ -354,7 +356,7 @@ MRPC 本地固定绑定足够时不使用 Router；动态 Provider 才使用 Rou
 
 `.mrpc` 仍为跨语言接口唯一来源；用 `-ts-out` 生成 TypeScript ESM 绑定，再由项目构建流程生成 JavaScript。Node 能力使用 `@d7z-team/mini-go/rpc` 的连接、生成客户端和 Provider 适配，不另写一套 JSON RPC。
 
-当前 SDK 内部使用 Worker、Rust WASM Endpoint 与 WebSocket，无需创建 MiniGo 或加载 Program；“无需 Mini-Go 程序”不等于没有 SDK 的 WASM／Worker 分发依赖。固定库依据见[JavaScript RPC 记录](go-mini-integration.md#javascript-rpc-facts)。
+当前 SDK 内部使用 Worker、Rust WASM Endpoint 与 WebSocket，无需创建 MiniGo 或加载 Program；“无需 Mini-Go 程序”不等于没有 SDK 的 WASM／Worker 分发依赖。接口沿[JavaScript RPC 记录](go-mini-integration.md#javascript-rpc-facts)解释，当前分发及验证范围见[更新基线](go-mini-integration.md#current-verification)。SDK 的编译器与语言工具可供非 Go 工具端按需使用，不改变核心 Go 宿主的编译职责，也不要求管理页面取得原生能力。
 
 采用产物包含实际 JavaScript 入口、生成绑定、包清单、依赖锁定输入及必要分发文件，并关联 Node、npm、SDK、生成器和可选构建工具身份；源码、依赖或 SDK 改变均形成新的实现候选。依赖取得、生命周期脚本及打包过程只在获准准备环境执行，正式启动使用已准备产物，不默认临时安装最新版包。复用已构建 SDK 分发包与从库源码构建 SDK 分别记录条件；包名或本地版本号不证明已从公共仓库取得某一发布物。
 
@@ -390,7 +392,7 @@ Go `os/exec` 提供启动、管道、等待和取消基础；面向 TinyAGI 的�
 
 #### 依据、替代项与适用边界
 
-go-mini 适用提交及逐项库事实唯一维护于[RPC 与嵌入补充核对](go-mini-integration.md#rpc-extension-facts)；Node／TypeScript 接入依据见[独立读取记录](go-mini-integration.md#javascript-rpc-facts)，此前实验仍按原提交解释。下列在线官方资料未固定成本项目工具链依赖版本：
+go-mini 适用提交、实测范围及更新流程唯一维护于[库参考](go-mini-integration.md#current-verification)；[RPC 机制](go-mini-integration.md#rpc-extension-facts)与[Node／TypeScript 契约](go-mini-integration.md#javascript-rpc-facts)保留各自来源，早期实验仍按原提交解释。下列在线官方资料未固定成本项目工具链依赖版本：
 
 | 一手来源 | 支持命题 | 设计推论与边界 |
 | --- | --- | --- |
@@ -461,7 +463,7 @@ Go／Rust／Node.js 能力端以宿主绑定的服务及实现身份调用专用
 | 普通消息中的 JSON 动作 | 独立脚本已完成读取、交付、修订与事件接续；提案仍须经宿主接纳 | go-mini／SQLite／向量 SDK 组合、原生工具及流式已验证 |
 | 截断与错误 | 保留原始停止原因和 usage；运行记录区分 length 截断、空内容、JSON 错误与服务故障 | HTTP 成功等于存在可用动作，或空内容就是自主拒答 |
 | 生成额度与投入档位 | 分别测试默认/1024、low/1024、默认/2048；没有跨任务一致收益，暂不更改统一默认 | 参数被接受就等于网关真实透传；更大额度或更低投入必然省成本 |
-| 用量与缓存 | 保存网关原字段及实际恢复调用；口径冲突和未知费用明确保留 | 确定账单、跨模型速度排名或完整服务隔离已验证 |
+| 用量与缓存 | 保存网关原字段及实际恢复调用；按[复用接入](#efficiency-integration)区分输入处理、结果复用和费用口径，冲突及未知明确保留 | 官方缓存能力或折扣已由网关透传、确定账单、跨模型速度排名或完整服务隔离已验证 |
 
 [DeepSeek官方投入说明](https://api-docs.deepseek.com/guides/thinking_mode/)给出推理档位与默认设置，并区分普通消息和原生tools的推理块续接；[接口契约](https://api-docs.deepseek.com/api/create-chat-completion/)定义生成上限和截断含义。这些支持参数候选及错误映射，不证明网关身份、最优额度或任务可靠性。未来接入原生工具须另按提供者契约保留必要续接块，不能照搬报告 017 中普通消息的处理方式。
 
@@ -583,6 +585,51 @@ Rootless 降低引擎与容器依赖宿主 root 权限的范围，但不自动�
 不采用全能力强制容器化、把 TinyAGI 核心一并迁入容器作为前提、每次调用新建容器或缺失时回落宿主；这些方式分别增加环境依赖、耦合及启动成本，或违背准入要求。资料支持见[来源表](#container-sources)，实际状态及适用边界见[设计台账](research-plan.md#isolated-execution-extension)。
 
 <a id="persistence"></a>
+
+<a id="efficiency-integration"></a>
+
+### 3.12 计算节约与复用的工程接入
+
+沿[逻辑节约契约](../DESIGN.md#resource-efficiency)，Go 宿主在原模型、读取、检索、构建及运行适配器中利用现有机制。小型热点结果可在进程内有界保存，派生文件和必要索引信息沿现有本地文件／SQLite 承载；不新增 Redis、统一缓存服务或 TinyAGI 分布式部署。原始材料、主体状态和正式产物独立于可清理缓存。
+
+#### 3.12.1 提供者和本地组件映射
+
+| 接入位置 | 采用方式与条件 |
+| --- | --- |
+| 模型请求装配 | 复用同修订输入块的稳定表示，工具及格式描述来自同源契约；追踪元数据不混入提示。角色、语义顺序、材料选择和必要动态状态不为缓存改变 |
+| 自动前缀缓存 | 调用实际支持的服务，由适配器保留用量和命中反馈；请求相同不保证命中，缓存不是普通结果文件或业务记忆 |
+| 显式缓存边界／引用 | 仅按实际模型和端点支持的参数配置；持有引用不等于可向新身份或用途交付内容。失效后允许普通请求，不要求认知生成厂商控制字段 |
+| 网络读取 | 利用 HTTP 的验证器和条件请求确认表示仍有效，按 Cache-Control、Vary、认证及当前访问范围复用；未变化回应不等于所有下游结论仍有效 |
+| 在途只读工作 | 可复用 Go `singleflight` 或同等机制合并相同执行；外围宿主仍维护请求归属、各等待者取消、共享执行控制及预算，库本身不提供这些业务保证 |
+| 解析与确定计算 | 关联内容修订／摘要、范围、实现和参数；复用键及日志不含 Secret 原值。需要随机新样本或独立模型判断时，不合并生成结果 |
+| 检索准备 | 向量路线按内容片段、嵌入模型和切分配置复用表示；查询另核对过滤、范围及索引覆盖变化。Attemory 等按实际更新接口接入，不虚构局部重建能力 |
+| 能力构建 | 优先利用 Go、Cargo、npm 与容器构建工具的依赖／构建缓存；源码、锁定依赖、生成器、工具链、目标和选项继续关联产物。缓存命中不授予执行或采用资格 |
+| 认知程序编译 | 复用 go-mini 自带的编译缓存与会话；源码、依赖导出、泛型模板、构建标签和优化选项按库规则参与有效性判断。固定提交的契约与回归范围见[缓存记录](go-mini-integration.md#compiler-cache-facts) |
+| 连接与运行环境 | 复用合格 HTTP Transport、RPC 连接、已加载服务和受管理环境；限制空闲占用、并发和保留范围，身份会话及可变工作状态独立装配 |
+| 后台批量接口 | 明确允许等待的准备或评价工作可接入，保留期限、实际完成和用量；不把同步请求自动转为长窗口批量工作 |
+
+复用能力和计费口径绑定实际端点、账户处理范围、模型／实现及配置。应用内分组键不自动构成上游隔离；跨用途、试验域或身份共用只读准备仍须符合原信息范围。缓存放行也不能使特殊机密计算进入普通缓存、输入日志或诊断通路。
+
+首次准备、重复使用、失效重建及空闲占用分别计量；写入／读取费用可能互斥或包含在其他字段中，按提供者原口径映射，不静默重复相加。预期避免的费用与服务报告、估算及最终账单分别显示。缓存配置和前缀发生变化时保留原因及相关修订，不必记录敏感正文来解释未命中。
+
+<a id="efficiency-sources"></a>
+
+#### 3.12.2 一手契约、选择依据与适用边界
+
+下列在线官方契约支持机制选择；实际接入按所用模型、版本、账户及端点固定支持范围。供应商调整参数、期限或价格时更新适配，逻辑正文不固化统一 token 门槛、保留时间或折扣。
+
+| 来源 | 支持的命题 | TinyAGI 的采用与边界 |
+| --- | --- | --- |
+| [OpenAI Prompt caching](https://developers.openai.com/api/docs/guides/prompt-caching)，匹配、配置差异与输出说明 | 相同前缀和兼容请求配置可复用输入处理；不同模型的边界、期限和计费不同，仍生成新的输出 | 提供者适配映射支持的参数及原用量，稳定表示不等于任意提示重排无损，也不承诺逐字重复 |
+| [DeepSeek Context Caching](https://api-docs.deepseek.com/guides/kv_cache/)，命中规则与使用统计 | 默认自动缓存，命中依赖已形成的前缀单元；返回 `prompt_cache_hit_tokens`／`prompt_cache_miss_tokens`，命中尽力提供 | 接入自动复用并保留反馈；相同公共片段不保证下一请求立即命中，官方契约不证明现有网关透传或折扣 |
+| [Anthropic Prompt caching](https://platform.claude.com/docs/en/build-with-claude/prompt-caching)，匹配、边界及计费 | 支持稳定前缀及缓存边界；缓存段须精确匹配，写入、读取及期限有各自价格 | 按预期重复使用和维护成本选择支持的方式；不默认预热、空请求保温或延长全部内容的保留期 |
+| [vLLM Automatic Prefix Caching](https://docs.vllm.ai/en/latest/features/automatic_prefix_caching/)，用途及限制 | 本地推理服务可复用相同前缀处理；收益取决于重复输入，不能等同减少输出生成工作 | 作为外部服务能力配置和观察，不在 TinyAGI 内实现模型引擎或创建其内部状态对象 |
+| [RFC 9111 §4.3](https://www.rfc-editor.org/rfc/rfc9111.html#section-4.3) | 条件请求和未修改回应支持缓存表示的验证与复用 | 遵守来源验证及缓存范围；网络错误不能直接解释为材料未变化 |
+| [Go singleflight](https://pkg.go.dev/golang.org/x/sync/singleflight) 与 [net/http Transport](https://pkg.go.dev/net/http#Transport) | 同键在途调用可共享结果，HTTP 连接可通过 Transport 复用 | 利用已有库；各请求权限、取消语义、期限与成本归属仍由宿主负责 |
+| [Docker 构建缓存优化](https://docs.docker.com/build/cache/optimize/) | 依赖层及缓存挂载可减少重复下载和构建准备 | 在原工具链与隔离范围内复用，依赖及平台变化按构建契约重算；不因缓存存在信任产物 |
+| [OpenAI Batch API](https://developers.openai.com/api/docs/guides/batch) | 批量请求有独立完成窗口和计费条件 | 仅用于期限允许的后台工作；费用优势不能代替实时响应要求 |
+
+采用分层复用，是为了利用组件已有能力并保留业务所有权；不采用自建通用缓存后端、合并独立推理结果、为了命中填充提示或按费用自动降级模型。已有报告仅支持各自读取、构建或模型条件，没有形成完整节约性能基线；设计与观测字段可确定，实际收益仍是适用边界。[状态](research-plan.md#efficiency-design)、[评价](sandbox-evaluation.md#efficiency-evaluation)
 
 ## 4. 领域状态与内容存储
 

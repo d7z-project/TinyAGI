@@ -9,15 +9,23 @@
 | 阅读主题 | 章节入口 |
 | --- | --- |
 | 总体状态 | [当前范围](#research-status) · [状态定义](#closure-status) · [主体运行](#whole-system) · [基础设计](#remaining-questions) · [用途配置](#deferred) |
-| 领域与扩展 | [领域对象与视图](#domain-boundaries) · [外部检索提供者](#retrieval-design) · [独立机密](#secret-management) · [管理工作台](#management-extension) · [能力扩展](#capability-extension) · [Node.js 补充](#node-rpc-extension) · [主动学习](#active-learning-extension) |
+| 领域与扩展 | [领域对象与视图](#domain-boundaries) · [外部检索提供者](#retrieval-design) · [计算节约](#efficiency-design) · [独立机密](#secret-management) · [管理工作台](#management-extension) · [能力扩展](#capability-extension) · [Node.js 补充](#node-rpc-extension) · [主动学习](#active-learning-extension) |
 | 个体与控制 | [初始化与迁移](#initialization-extension) · [预制能力库](#prebuilt-extension) · [隔离执行](#isolated-execution-extension) · [任务控制](#task-control-extension) · [架构一致性](#architecture-consistency) |
-| 维护 | [后续维护](#next-steps) |
+| 维护 | [执行库验证](#library-validation) · [后续维护](#next-steps) |
 
 <a id="research-status"></a>
 
 ## 当前范围
 
-当前处于设计阶段：以既有实验和一手资料明确机制，不运行新增实验或模型调用，不推进产品实现。逻辑设计、工程映射和历史证据分别维护；未来测试或实施按用户明确要求确定范围。
+当前处于设计阶段，以既有实验和一手资料明确机制，不推进产品实现或新增模型调用。执行库更新可单独开展固定提交的回归与接入核对；当前范围见[库更新验证](#library-validation)。逻辑设计、工程映射和实测证据分别维护，库测试不构成产品实现。
+
+<a id="library-validation"></a>
+
+### 执行库更新验证
+
+go-mini 以固定提交 `fbb16ee99748e84b523bbd677bd477258c358956` 作为新的核对基线。采用上游测试检查执行与取消、热更新、编译缓存、MRPC 生成及 Go／Rust／Node 接入；逐项结果和环境边界唯一见[报告 018](experiments/018-go-mini-library-validation.md)，当前接口解释见[库参考](go-mini-integration.md#current-verification)。
+
+保留单宿主、有限认知入口、业务任务独立管理和外部能力接入的设计。库内部并行、SDK 队列、采样统计与编译器会话各按实际职责使用，不把它们扩展为完整任务调度器、主体克隆或机密服务。后续依赖更新按[固定流程](go-mini-integration.md#update-verification)检查差异及受影响范围，旧报告不被新成绩覆盖；完整主体、实际模型效果和跨平台发行仍不在该库验证范围。
 
 <a id="closure-status"></a>
 
@@ -56,6 +64,7 @@
 | 记忆与世界认知 | 领域真值、外部检索和内容读取分开；按缺口选择合格提供者，来源保留时间、修订、归属和用途。同源转述或重复命中不增加独立证据，纠正可回查，覆盖不足保留未知 | 不选检索服务作唯一事实库，不默认全量注入或提交全部服务；不按相关性自动认人或采信主张，不预设通用最优查询策略 | [记忆依据](whole-system-evidence.md#closure-memory)；[记忆](whole-system-design.md#memory)、[视图](materials-and-context.md#projection)、[检索分工](#retrieval-design) |
 | 心智协作 | 一个主负责心智起步，有明确调查／核对／相关经历需求才邀请；独立贡献后围绕分歧交流，按证据整合。长期人格保留身份、私有经历与意愿，临时角色承担可变职责；总预算约束全部参与者 | 不默认全员讨论、固定专家人数、强制一致或以角色名授予专业性；不把采样增加的收益归因讨论，也不要求长期人格先证明提高任务得分才能存在。人数／轮次按所属认知或活动额度配置 | [协作依据](whole-system-evidence.md#closure-minds)；[组织机制](whole-system-design.md#organization) |
 | 能力与模型 | 公共 API 表达请求、结果、来源、范围和能力差异；外部通知源由能力创建／接入。模型工具提案经宿主接纳，流式片段与终止分开，失败／截断／拒绝不混同。认知按用途选择已装配的模型、感知、算法和工具，提供者经接口执行实际计算 | 自动路由优化可后续扩展，不以 SDK、同名模型别名或 HTTP 成功推定兼容；不省略事实与权限核对。不恢复集群、K8s 或对象存储 | [能力依据](whole-system-evidence.md#closure-capabilities)；[公共端口](runtime-protocol.md#capability-api)、[工程选择](engineering-reference.md) |
+| 计算节约与性能保持 | 利用提供者前缀复用、稳定装配、有效结果、相同只读工作合并、增量准备及有界运行复用，减少重复工作并保留主体行为 | 不用旧答案代替独立判断，不为命中扩大上下文、冻结状态或自动降级模型；供应商机制不证明网关透传或完整收益 | [逻辑规则](materials-and-context.md#cache)、[运行](runtime-protocol.md#execution-reuse)、[一手依据](engineering-reference.md#efficiency-sources) |
 | 计算方式与可选组件 | 按缺口组合规则、经验、专用计算、轻量判断与生成式推理，减少不必要工作；外部开源实现沿已有能力体系按需接入 | 不设固定快慢主体或必经判断层；具体实现保留候选身份，不指定默认组件，资料不构成本项目收益实测 | [有限思考](materials-and-context.md#effort)；[候选与资料](engineering-reference.md#optional-cognition-components) |
 | 经验与演化 | 两阶段复盘区分当时可得依据与后来结果；先形成带来源、适用条件、反例和失效条件的 Reference；使用时核对当前情境。程序／策略候选进入独立状态和受控能力的沙箱，扩大采用按预先声明的分能力门槛；保留固定参考与采用历史以识别累计退化 | 不把反思文本或来源任务成功当作迁移，不因反馈自动更新权重／采用代码；获准自主迭代按下方主动学习范围处理，不把模拟人物与状态整体合入现实。缺少采用依据时保持候选身份和原行为，不宣称已学会 | [学习依据](whole-system-evidence.md#closure-learning)；[记忆与采用](whole-system-design.md#memory)、[沙箱](sandbox-evaluation.md) |
 | 人物、情感与多模态 | 账号身份带平台命名空间，关联以明确可核对证据和本人意图为准；关联、认证、读取与披露分别控制。情感评价结合主体处境与交流情境，现实／实际交流／剧情分别归属；主动联系遵守可撤销约定。多模态保留来源、时间、轨道和状态，轨道不等于人物；停止控制优先于认知，身份／受众未知时缩小披露并维持可提供的公共帮助 | 不靠昵称／声纹相似强行跨平台认人，不以亲密降低工作事实标准；不固定爱意分数或问候频次，不因无人回复加频；不把传输标准当说话人识别或端到端实时性证明 | [交互依据](whole-system-evidence.md#closure-interaction)；[人物情境](interaction-design.md)、[输出与控制](runtime-protocol.md#streams) |
@@ -69,6 +78,7 @@
 | 配置对象 | 由谁在何时确定 | 设计已规定的约束 |
 | --- | --- | --- |
 | 模型、SDK、服务与设备版本 | 实际接入时由工程配置固定 | 声明能力、处理范围、费用口径与终止语义；不以同名／同结构推定等价 |
+| 复用策略、容量与费用口径 | 接入实际提供者时声明支持方式，按用途设置保存、回收、并发与允许等待范围 | 所需信息、独立判断、期限和权限不因命中而改变；实际费用、估算与未知分开，不固化统一期限或折扣 |
 | 检索绑定、策略、材料准备与额度 | 按领域用途、实际提供者契约及语料设置 | 提供者同级，材料关联对象类型和修订，覆盖未知可见；特有参数留在对应适配，不强制全部实现支持 |
 | 主动学习强度与策略 | 有权管理者配置强度及额度，策略在范围内选择议题；具体初始档位随用途确定 | 最低关闭不自发学习；启用有界，试验主体不能提高额度；自发学习与用户明确任务分开，关闭与在途收束可见 |
 | 思考预算、参与人数、轮次与实时目标 | 按活动用途、可用资源和用户要求设置 | 有总上限，全部分支计费；不虚构统一最优数值，无具体进展则停止 |
@@ -95,6 +105,23 @@
 采用现成 API／SDK 减少专用引擎开发，代价是接口差异、材料同步和外部服务维护。拒绝用统一向量字段约束全部实现，也不把所有领域查询改成通用资源管理。逻辑在[总设计](../DESIGN.md#retrieval)与[运行契约](runtime-protocol.md#retrieval)，操作在[工作台](management-workspace.md#retrieval-management)，评价在[沙箱](sandbox-evaluation.md#retrieval-evaluation)。
 
 依据为[官方接口资料](engineering-reference.md#retrieval-sources)及[向量服务契约](engineering-reference.md#vector-sources)。报告 013／014 的局部查询与组合不覆盖这些外部服务，资料不证明本项目检索质量、组合收益或端到端性能；实际接入版本、策略及预算归用途配置，不新增验证前置任务。
+
+<a id="efficiency-design"></a>
+
+## 计算节约与复用的设计范围
+
+分层复用与增量处理为已定设计。认知决定材料及计算用途，各处理能力复用符合条件的输入处理、结果和准备工作，宿主共用预算、控制及观测；不建立统一资源实体或独立缓存服务。方案以保持所需信息、计算目的、响应要求和正常主体行为为前提。
+
+| 采用项 | 选择理由与适用边界 |
+| --- | --- |
+| 稳定输入与提供者前缀复用 | 减少相同输入的重复处理，当前输出仍重新生成；装配不统一人格、不任意重排语义，实际命中及费用按服务反馈 |
+| 有效结果及相同只读工作合并 | 避免重复读取、解析和确定计算；保留各请求归属、权限及取消，实际执行成本只计一次，独立采样不合并 |
+| 增量准备与有界运行复用 | 复用未变材料、依赖和合格运行准备；无法确认影响范围时重算，必要状态独立保存，后台批量不损害实时要求 |
+| 完整性能与费用观察 | 同时观察质量、行为、响应、控制、费用及占用；首次准备、重复使用和失效重建分别报告，未知不视为零成本 |
+
+不采用按相似问题默认复用答案、为命中保留无关材料、默认空请求保温、无界常驻，以及以节约名义暗中降级模型或降低学习强度。改变信息、采样或认知组织的方案仍按行为候选评价，不能直接取得透明优化资格。
+
+一手资料支持采用机制，现有实验不构成完整节约基线；网关参数、实际折扣和端到端净收益仍受具体接入与负载限制。容量、期限、收费口径及用途门槛属于配置，不自动新增实验待办。[逻辑](../DESIGN.md#resource-efficiency)、[资料与取舍](engineering-reference.md#efficiency-sources)、[管理](management-workspace.md#efficiency-management)、[评价](sandbox-evaluation.md#efficiency-evaluation)
 
 <a id="domain-boundaries"></a>
 
@@ -171,7 +198,7 @@ Secret 独立保管、可信提交、授权使用及必要记录为已定设计�
 
 能力端支持 Go／Rust／Node.js（npm），本项为已定设计。沿既有 MRPC 单一接口来源生成 TypeScript／JavaScript 调用与服务适配，复用 npm 生态；程序包、锁定依赖、运行环境及 SDK 分发文件共同关联固定实现。依赖准备、试验、信任、任务中止、替换与 Secret 继续走原契约，不新建主体或独立管理后端。
 
-选择理由是使用现有 JavaScript SDK／包及库已有 RPC 支持；不要求把 npm 能力改写为 Go／Rust，也不强制所有能力转为 Node。当前 Node SDK 的 WebSocket 接入与 Go／Rust 的可选原生传输分别装配，不假定全部传输对等。库依据见[固定快照](go-mini-integration.md#javascript-rpc-facts)，工程方式见[Node 接入](engineering-reference.md#node-rpc-integration)；尚无本项目 Node 接入实测结果。
+选择理由是使用现有 JavaScript SDK／包及库已有 RPC 支持；不要求把 npm 能力改写为 Go／Rust，也不强制所有能力转为 Node。当前 Node SDK 的 WebSocket 接入与 Go／Rust 的可选原生传输分别装配，不假定全部传输对等。库依据见[固定快照](go-mini-integration.md#javascript-rpc-facts)，当前实测范围见[报告 018](experiments/018-go-mini-library-validation.md)；[Node 工程接入](engineering-reference.md#node-rpc-integration)中的完整服务管理与能力采用仍属设计。
 
 <a id="active-learning-extension"></a>
 
@@ -266,6 +293,7 @@ Secret 独立保管、可信提交、授权使用及必要记录为已定设计�
 | 接纳前交互 | 交流职责保存请求、澄清和处理结果，有限投入关联原会话及输入事件；明确接纳后建立活动并承接投入 | 不将收消息视为业务承诺，不制造无归属调用或以接纳刷新预算；[交互](whole-system-design.md#request-intake)、[运行归属](runtime-protocol.md#interaction-scope) |
 | 授权来源与委托 | 共同上下文保留发起者、执行者、权利来源及接收方，领域逐项接纳；子委托限于允许范围，当前父依据继续约束访问 | 不合并全部参与者权限，不让自主活动沿用无关用户委托，不另建通用权限实体；[授权契约](runtime-protocol.md#capability-authority) |
 | 记忆形成与维护 | 必要过程记录与选择性长期记忆分开，临时内容不自动升级；归档、更正、淡出检索与删除分别处理 | 不默认每消息总结，不用检索命中替代当前判断，不借必要维护绕过学习关闭；[记忆生命周期](whole-system-design.md#memory-lifecycle) |
+| 计算节约与共享执行 | 输入处理、结果复用和独立生成分别声明；复用在当前范围内执行，共享成本一次登记，冷／热条件与完整收益分别评价 | 不用命中率替代质量，不合并独立判断、不冻结有效更新；[输入](runtime-protocol.md#model-reuse)、[运行与结算](runtime-protocol.md#execution-reuse) |
 | 上下文有效性 | 根据处理许可与披露变化分别核对已读输入、摘要、会话及待交付产物；不能可靠排除受限历史时重新装配 | 不只检查新读取，不将停止本地复用当外部删除，不无条件清空仍获准内容；[上下文契约](materials-and-context.md#context-validity) |
 | 已交付结论纠正 | 原活动所有者按已知使用关系组织有限处置，区别后来变化、当时错误和新增未知；有当前授权及预算才继续工作或发送 | 不永久监测全部历史，不恢复被撤销联系，不以改正文冒充通知；[纠正契约](whole-system-design.md#delivery-correction) |
 | 控制对象与传播 | Self／Mind 可直接控制，主体暂停与输出停止分别表达；Episode 是持续活动，Task 是活动内可选任务安排，Operation 是已接纳工作；当前尝试另有执行身份。控制携带类型与传播范围，认知中断和任务停止各有归属 | 不使用含义不明的“任务 ID”，不因认知被取消而自动终止独立操作；[生命周期与控制](runtime-protocol.md#core-task-lifecycle) |

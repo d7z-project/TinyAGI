@@ -20,8 +20,10 @@
 | 使用客户端预制能力 | [总体选择](../DESIGN.md#prebuilt-capabilities) → [维护与调用契约](runtime-protocol.md#prebuilt-library) → [工程接入](engineering-reference.md#client-library) |
 | 创建与更新人物 | [总体流程](../DESIGN.md#initialization-migration) → [引导契约](runtime-protocol.md#bootstrap-migration) → [管理入口](management-workspace.md#initialization-management) → [工程接入](engineering-reference.md#prompt-bootstrap) |
 | 创建试验主体与比较行为 | [总体沙箱](../DESIGN.md#sandbox) → [初态与导入](sandbox-evaluation.md#trial-initial-state) → [环境覆盖](sandbox-evaluation.md#trial-environment) → [工作台](management-workspace.md#trial-management) → [评价](sandbox-evaluation.md#regression-gates) |
+| 理解计算节约与复用 | [总体选择](../DESIGN.md#resource-efficiency) → [输入与结果](materials-and-context.md#cache) → [执行与结算](runtime-protocol.md#execution-reuse) → [接入依据](engineering-reference.md#efficiency-integration) → [评价](sandbox-evaluation.md#efficiency-evaluation) |
 | 深入某项机制 | 从总设计或下表进入对应专题；专题维护详细规则，其他文档只保留必要概览和链接 |
 | 理解具体承载 | [工程参考](engineering-reference.md#physical-architecture) → 技术栈／存储／能力接入 → [库事实](go-mini-integration.md) |
+| 更新执行库与核对接入 | [当前库基线](go-mini-integration.md#current-verification) → [库回归报告](experiments/018-go-mini-library-validation.md) → [后续更新流程](go-mini-integration.md#update-verification) |
 | 核对选择与状态 | [设计台账](research-plan.md#closure-status) → 采用理由／备选／用途配置 → [证据索引](whole-system-evidence.md) |
 
 ## 六份逻辑设计专题
@@ -30,7 +32,7 @@
 | --- | --- |
 | [主体运行、认知协作与学习](whole-system-design.md) | 持续主体、内生关注、按需活动、正常经历、多人格组织与公共整合、经验形成、主动学习议程及策略迭代 |
 | [交流、人物与情境](interaction-design.md) | 意愿与投入、信任／污染、规范／格式、身份／隐私、情感／角色及主动联系 |
-| [资料、领域视图与认知输入](materials-and-context.md) | 领域对象及关系、资料内容与表示、受限视图、来源、选读及执行使用；外部事件源、有限思考与读取／结果复用 |
+| [资料、领域视图与认知输入](materials-and-context.md) | 领域对象及关系、资料内容与表示、受限视图、来源、选读及执行使用；外部事件源、有限思考、稳定输入装配、结果复用及增量准备 |
 | [逻辑模块、能力契约与运行协议](runtime-protocol.md) | 主体直接认知归属、统一事件、能力构建与运行对象、学习强度及关闭、模型端口、步骤／操作接纳与生命周期、配置解析、个体状态与实现信任 |
 | [沙箱、能力评估与回归](sandbox-evaluation.md) | 局部／组合／主体级试验、构建环境、试验主体生命周期、隔离、复盘、测试材料、基线、评价及采用 |
 | [管理工作台与人工干预](management-workspace.md) | 管理入口及身份、模型／服务及能力构建维护、独立机密的对象／权限／授权分配／审计与可信提交、动态表单／蓝图、提交与观察 |
@@ -42,7 +44,7 @@
 | 参考 | 唯一维护范围 |
 | --- | --- |
 | [工程选型与部署](engineering-reference.md) | 物理部署、软件组合、技术栈、能力工具链／子进程、存储／文件、向量服务与 Attemory 接入及选型依据 |
-| [go-mini 库行为与接入](go-mini-integration.md) | 固定提交的读取记录、MRPC 多语言／资源／替换、实例／scope／补丁及宿主接入限制 |
+| [go-mini 库行为与接入](go-mini-integration.md) | 固定提交的源码核对与库回归、MRPC 多语言／资源／替换、实例／scope／补丁及宿主接入限制 |
 
 <a id="experiments"></a>
 ## 决策与证据
@@ -114,7 +116,9 @@
 | 情境投影、选择性发现、读取／处理／使用／交付 | [投影](materials-and-context.md#projection)、[操作](runtime-protocol.md#domain-operations)、[使用记录](materials-and-context.md#context-reading) |
 | 内容派生、运行使用、来源和信息范围 | [派生规则](materials-and-context.md#provenance)、[资料](materials-and-context.md#domain-evidence) |
 | 检索领域、提供者、用途策略与来源映射 | [逻辑分工](runtime-protocol.md#retrieval)、[同级接入](engineering-reference.md#retrieval-providers)、[设计决定](research-plan.md#retrieval-design) |
-| 读取／结果缓存、有限思考 | [复用条件](materials-and-context.md#cache)、[投入](materials-and-context.md#effort) |
+| 前缀复用、稳定输入与有效结果 | [装配](materials-and-context.md#stable-input)、[复用条件](materials-and-context.md#reuse-validity)、[提供者接入](runtime-protocol.md#model-reuse) |
+| 相同只读工作合并、增量准备与有界保留 | [逻辑分工](materials-and-context.md#incremental-preparation)、[控制与结算](runtime-protocol.md#execution-reuse)、[工程映射](engineering-reference.md#efficiency-integration) |
+| 节约效果、缓存管理与有限思考 | [管理](management-workspace.md#efficiency-management)、[评价](sandbox-evaluation.md#efficiency-evaluation)、[投入](materials-and-context.md#effort)、[状态](research-plan.md#efficiency-design) |
 | 逻辑模块、状态所有者、ModelRequest／Result | [职责](runtime-protocol.md#software-modules)、[模型端口](runtime-protocol.md#model-port) |
 | 公共 API、事件接入／观察、领域查询与检索提供者 | [公共契约](runtime-protocol.md#capability-api)、[检索分工](runtime-protocol.md#retrieval) |
 | 能力构建、接口、产物、采用与运行对象 | [整体闭环](../DESIGN.md#capability-development)、[逻辑契约](runtime-protocol.md#capability-lifecycle)、[管理入口](management-workspace.md#capability-management)、[设计范围](research-plan.md#capability-extension) |
