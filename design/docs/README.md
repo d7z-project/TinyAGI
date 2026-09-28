@@ -1,8 +1,10 @@
 # 文档索引
 
+总设计与实施方案位于上层 `design/` 目录；本目录维护专题、工程参考、决策与文档规范，`experiments/` 保存公开整理报告。文档构建配置、脚本和主题分别位于 `design/book.toml`、`design/scripts/` 和 `design/theme/`。
+
 用途：阅读与术语索引。
 
-[项目入口](../README.md) · [完整总设计](../DESIGN.md) · [设计状态](research-plan.md)
+[项目入口](../../README.md) · [完整总设计](../DESIGN.md) · [设计状态](research-plan.md)
 
 默认阅读当前正文；历史材料只用于查证来源，不是另一套设计。所有状态与配置边界统一见[设计台账](research-plan.md#research-status)。
 
@@ -43,6 +45,7 @@
 
 | 参考 | 唯一维护范围 |
 | --- | --- |
+| [实施方案与阶段验收](../TODO.md) | 阶段顺序、交付内容、首批完整链路、实现契约及验收安排；规划不代表已实现 |
 | [工程选型与部署](engineering-reference.md) | 物理部署、软件组合、技术栈、能力工具链／子进程、存储／文件、向量服务与 Attemory 接入及选型依据 |
 | [go-mini 库行为与接入](go-mini-integration.md) | 固定提交的源码核对与库回归、MRPC 多语言／资源／替换、实例／scope／补丁及宿主接入限制 |
 

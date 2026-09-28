@@ -2,7 +2,7 @@
 
 用途：维护规范。
 
-[项目入口](../README.md) · [文档索引](README.md) · [设计迭代](../DESIGN.md#iteration)
+[项目入口](../../README.md) · [文档索引](README.md) · [设计迭代](../DESIGN.md#iteration)
 
 目录：[职责](#ownership) · [状态与证据](#status) · [结构](#structure) · [更新](#workflow) · [保全](#preservation)
 
@@ -13,16 +13,18 @@
 | 位置 | 只维护什么 |
 | --- | --- |
 | README.md | 项目目的、阶段及最短阅读路线 |
-| DESIGN.md | 完整自顶向下的逻辑架构、行为机制、关键取舍和开放问题概览 |
-| docs/README.md | 阅读路线、专题职责、资料入口与术语索引 |
+| design/DESIGN.md | 完整自顶向下的逻辑架构、行为机制、关键取舍和开放问题概览 |
+| design/TODO.md | 实施顺序、阶段交付、首批范围及验收安排；不重复设计状态或将计划计作完成证据 |
+| design/docs/README.md | 阅读路线、专题职责、资料入口与术语索引 |
 | 六份设计专题 | 逻辑职责、契约、场景、采用理由及证据入口；不写软件依赖、技术栈或部署正文 |
-| engineering-reference.md | 工程约束、物理部署、软件依赖、技术栈、存储与 SDK 选择；保持理由、替代项和证据边界 |
-| go-mini-integration.md | 已核对执行库事实与接入参考；不代替逻辑认知设计 |
-| research-plan.md | 唯一设计状态台账：设计约束、已定方案与用途配置 |
-| whole-system-evidence.md | 唯一实验目录、原始资料入口、一手来源及证据范围 |
-| docs/experiments/、experiments/ | 有日期的报告、冻结条件、脚本、原始结果与失败 |
+| design/docs/engineering-reference.md | 工程约束、物理部署、软件依赖、技术栈、存储与 SDK 选择；保持理由、替代项和证据边界 |
+| design/docs/go-mini-integration.md | 已核对执行库事实与接入参考；不代替逻辑认知设计 |
+| design/docs/research-plan.md | 唯一设计状态台账：设计约束、已定方案与用途配置 |
+| design/docs/whole-system-evidence.md | 唯一实验目录、原始资料入口、一手来源及证据范围 |
+| design/docs/experiments/ | 公开整理报告：实际条件、汇总统计、失败与证据边界 |
+| experiments/ | 不公开的冻结条件、脚本、原始结果与失败；整理文档不改写原始证据 |
 
-文档网站的构建与公开范围见[发布说明](documentation-publishing.md)。`SUMMARY.md` 只维护章节顺序，书稿与 HTML 由工具生成；原始测试目录和历史讨论不参与发布。
+文档网站的构建与公开范围见[发布说明](documentation-publishing.md)。`design/SUMMARY.md` 只维护章节顺序，书稿与 HTML 由工具生成；原始测试目录和历史讨论不参与发布。
 
 总设计以持续主体、认知组织、感知与行动为主线；对话、任务、权限及管理机制按其职责展开，不用局部实验或竞品功能清单重定义系统目标。新内容进入对应专题，不按对话轮次新增文件。跨专题变化先调整总架构，再更新各自负责的机制；其他位置保留概览和链接，避免复制详细协议、统计或进度清单。只有出现可以独立维护的新职责时才拆分专题，并同步索引。
 

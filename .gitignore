@@ -2,7 +2,7 @@
 /experiments/
 
 # Local discussion history and editor state.
-/GPT.md
+/design/GPT.md
 /AGENTS.md
 /.idea/
 *.iml
@@ -17,10 +17,10 @@
 *.key
 
 # Generated documentation and Mermaid assets installed by mdbook-mermaid.
-/.mdbook-src/
-/book/
-/mermaid.min.js
-/mermaid-init.js
+/design/.mdbook-src/
+/design/book/
+/design/mermaid.min.js
+/design/mermaid-init.js
 
 # Temporary language/build artifacts.
 __pycache__/

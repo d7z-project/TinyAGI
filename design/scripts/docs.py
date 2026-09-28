@@ -16,11 +16,13 @@ import sys
 from urllib.parse import unquote, urlsplit
 
 
-ROOT = Path(__file__).resolve().parents[1]
-STAGING = ROOT / ".mdbook-src"
-BOOK = ROOT / "book"
+DESIGN_DIR = Path(__file__).resolve().parents[1]
+ROOT = DESIGN_DIR.parent
+STAGING = DESIGN_DIR / ".mdbook-src"
+BOOK = DESIGN_DIR / "book"
+SUMMARY = DESIGN_DIR / "SUMMARY.md"
 LINK = re.compile(r"(?P<image>!?)\[(?P<label>[^\]\n]+)\]\((?P<url>[^\s)]+)\)")
-PRIVATE_ROOTS = ("experiments/", "GPT.md", "AGENTS.md", ".idea/", ".env")
+PRIVATE_ROOTS = ("experiments/", "design/GPT.md", "AGENTS.md", ".idea/", ".env")
 RULES = {
     "API credential": re.compile(
         r"\b(?:sk-[A-Za-z0-9_-]{16,}|gh[pousr]_[A-Za-z0-9_]{20,}"
@@ -59,14 +61,18 @@ def scan(text: str, name: str) -> list[str]:
 
 
 def chapters() -> list[Path]:
-    summary = ROOT / "SUMMARY.md"
+    summary = SUMMARY
     paths = []
     for match in LINK.finditer(summary.read_text()):
-        name = match["url"]
+        name = posixpath.normpath(posixpath.join("design", match["url"]))
         path = ROOT / name
         if (
             not name.endswith(".md")
-            or name not in ("README.md", "DESIGN.md") and not name.startswith("docs/")
+            or (name != "README.md" and not name.startswith("design/"))
+            or name.startswith(PRIVATE_ROOTS)
+            or path == SUMMARY
+            or path.is_relative_to(STAGING)
+            or path.is_relative_to(BOOK)
             or ".." in PurePosixPath(name).parts
             or path.is_symlink()
             or not path.is_file()
@@ -78,7 +84,12 @@ def chapters() -> list[Path]:
         paths.append(path)
     if not paths:
         raise ValueError("SUMMARY.md must list public chapters")
-    missing = set((ROOT / "docs").rglob("*.md")) - set(paths)
+    candidates = {
+        p for p in DESIGN_DIR.rglob("*.md")
+        if not p.is_relative_to(STAGING) and not p.is_relative_to(BOOK)
+        and p != SUMMARY and p != DESIGN_DIR / "GPT.md"
+    }
+    missing = candidates - set(paths)
     if missing:
         raise ValueError("Unlisted documents: " + ", ".join(str(p.relative_to(ROOT)) for p in sorted(missing)))
     return paths
@@ -87,7 +98,7 @@ def chapters() -> list[Path]:
 def check() -> list[Path]:
     paths = chapters()
     failures = []
-    for path in [*paths, ROOT / "SUMMARY.md"]:
+    for path in [*paths, SUMMARY]:
         text = path.read_text()
         name = str(path.relative_to(ROOT))
         failures.extend(scan(text, name))
@@ -148,8 +159,8 @@ def prepare() -> None:
         destination.parent.mkdir(parents=True, exist_ok=True)
         destination.write_text(text)
     summary = LINK.sub(
-        lambda m: f"[{m['label']}]({book_name(m['url'])})",
-        (ROOT / "SUMMARY.md").read_text(),
+        lambda m: f"[{m['label']}]({book_name(posixpath.normpath(posixpath.join('design', m['url'])))})",
+        SUMMARY.read_text(),
     )
     (STAGING / "SUMMARY.md").write_text(summary)
     print(f"Prepared {len(prepared)} public chapters.")
@@ -207,11 +218,11 @@ def verify() -> None:
 
 def build() -> None:
     prepare()
-    subprocess.run(["mdbook-mermaid", "install", str(ROOT)], check=True)
+    subprocess.run(["mdbook-mermaid", "install", str(DESIGN_DIR)], check=True)
     env = os.environ.copy()
     if "PAGES_BASE_PATH" in env:
         env["MDBOOK_OUTPUT__HTML__SITE_URL"] = env["PAGES_BASE_PATH"].rstrip("/") + "/"
-    subprocess.run(["mdbook", "build", str(ROOT)], env=env, check=True)
+    subprocess.run(["mdbook", "build", str(DESIGN_DIR)], env=env, check=True)
     verify()
 
 

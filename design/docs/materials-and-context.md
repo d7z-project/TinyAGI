@@ -6,7 +6,7 @@
 
 已有[本地流程实验](experiments/012-projection-alarm-activity.md)和[资料发现对照](experiments/013-resource-discovery.md)，仅支持原读取与活动条件；领域协作的完整效果、外部检索收益和真实通知效果尚无本项目实测结论。
 
-[项目入口](../README.md) · [文档索引](README.md) · [总架构](../DESIGN.md#logical-architecture) · [整体研究](research-plan.md#whole-system)
+[项目入口](../../README.md) · [文档索引](README.md) · [总架构](../DESIGN.md#logical-architecture) · [整体研究](research-plan.md#whole-system)
 
 | 阅读主题 | 章节入口 |
 | --- | --- |

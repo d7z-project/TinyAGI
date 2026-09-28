@@ -1,6 +1,6 @@
 # Summary
 
-- [TinyAGI](README.md)
+- [TinyAGI](../README.md)
 - [文档索引](docs/README.md)
 
 # 总体设计
@@ -18,6 +18,7 @@
 
 # 工程参考
 
+- [实施方案与阶段验收](TODO.md)
 - [工程选型与部署参考](docs/engineering-reference.md)
 - [go-mini 库行为与接入参考](docs/go-mini-integration.md)
 

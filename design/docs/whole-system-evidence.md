@@ -60,7 +60,7 @@
 
 既有[结果复核](experiments/003-result-revalidation.md)、[接纳与入账](experiments/008-dispatch-settlement.md)和[取消与冲突](experiments/009-cancel-restore-evidence.md)支持保留归属、依赖和实际作用的动机，不证明新增组合协议已经运行。
 
-库执行、MRPC 和生命周期事实沿[固定提交记录](go-mini-integration.md#library-facts)解释；人格整合与学习自主性来自用户目标及设计取舍，不伪装成已测认知收益。
+库执行、MRPC 和生命周期事实沿[固定提交记录](go-mini-integration.md#library-facts)解释；人格整合与学习自主性来自项目目标及设计取舍，不伪装成已测认知收益。
 
 [跨契约检查场景](sandbox-evaluation.md#contract-consistency-evaluation)明确预期行为；主体级试验按[装配契约](sandbox-evaluation.md#trial-subject)说明初态、激活工作、环境覆盖及评价限制。实际证据仍由原报告维护，设计规格不计作试验成绩。
 
@@ -74,7 +74,7 @@
 | 上下文与任务接续 | [活动工作区](whole-system-design.md#workspace) | [Lost in the Middle：长上下文使用限制](#source-lost-in-middle) |
 | 心智协作 | [协作机制](whole-system-design.md#organization) | [Scaling Agent Systems：协作与任务匹配](#source-agent-scaling)；[人格及协作资料](#interaction-references) |
 | 交付与经验 | [学习](whole-system-design.md#memory) | [Reflexion：反馈与反思](#source-reflexion)、[自我纠错限制](#source-self-correction)、[SCoRe：训练前提](#source-score) |
-| 何时继续、如何读取和评价 | [任务循环](whole-system-design.md#loop) | [Self-RAG：按需检索](#source-self-rag)、[模型评价的偏差](#source-model-judges)、[LongMemEval：记忆评价](#source-longmemeval) |
+| 何时继续、如何读取和评价 | [主体认知循环](whole-system-design.md#loop) | [Self-RAG：按需检索](#source-self-rag)、[模型评价的偏差](#source-model-judges)、[LongMemEval：记忆评价](#source-longmemeval) |
 | 关注、计划与程序复用 | [目标与计划](../DESIGN.md#attention-planning) | [混合主动交互原则](#source-mixed-initiative)、[Plan-and-Act：动态重规划](#source-plan-and-act)、[Voyager：程序积累](#source-voyager) |
 | 来源修订、路由与版本采用 | [来源与能力](../DESIGN.md#knowledge) | [PROV-DM：来源与修订](#source-prov)、[RouteLLM：模型路由](#source-routellm)、[AI Agents That Matter：成本与泛化](#source-agent-evaluation) |
 | 意愿、规范、身份、情感 | [交流与情境](interaction-design.md) | [交互设计的资料与边界](interaction-design.md#validation)；[报告 016](#report-016)补充合成人物／受众场景，不提供真实身份或情感效果的保证 |

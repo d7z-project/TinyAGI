@@ -2,7 +2,7 @@
 
 用途：文档发布维护。
 
-[项目入口](../README.md) · [文档索引](README.md) · [文档规范](documentation-guide.md)
+[项目入口](../../README.md) · [文档索引](README.md) · [文档规范](documentation-guide.md)
 
 目录：[公开范围](#public-scope) · [数据可用性](#data-availability) · [本地构建](#local-build) · [工作流](#github-pages) · [检查边界](#checks)
 
@@ -10,9 +10,9 @@
 
 ## 公开文档与唯一来源
 
-公开网站包含项目介绍、总设计、六份逻辑专题、工程与库参考、决策和证据索引、文档维护说明、整理后的实验报告。根目录 `SUMMARY.md` 是 mdBook 章节清单，正文仍维护于原文件，不手工维护另一份书稿。
+公开网站包含项目介绍、总设计、六份逻辑专题、实施方案、工程与库参考、决策和证据索引、文档维护说明、整理后的实验报告。`design/SUMMARY.md` 是 mdBook 章节清单，总设计与实施方案位于 `design/`，专题及参考资料位于 `design/docs/`，公开报告位于 `design/docs/experiments/`；根目录 `README.md` 保留项目入口。正文只维护一份，书稿由构建脚本生成。
 
-构建脚本只将清单中的 Markdown 复制到生成目录 `.mdbook-src/`，校验每个目标位于公开范围；不会将仓库根目录或整个工作区当作 mdBook 源目录。新增文档须加入章节清单。书稿生成、Mermaid 资产和 HTML 输出都由忽略规则排除，不提交重复产物。
+构建脚本只将清单中的 Markdown 复制到生成目录 `design/.mdbook-src/`，校验每个目标位于公开范围；不会将仓库根目录或整个工作区当作 mdBook 源目录。新增文档须加入章节清单。书稿生成、Mermaid 资产和 HTML 输出都由忽略规则排除，不提交重复产物。
 
 <a id="data-availability"></a>
 
@@ -36,14 +36,14 @@ cargo install mdbook-mermaid --version 0.17.1 --locked
 在仓库根目录执行：
 
 ```sh
-python3 scripts/docs.py build
+python3 design/scripts/docs.py build
 ```
 
-该命令检查公开源文件、准备书稿、安装插件随附的 Mermaid 前端资源、运行 mdBook 并检查输出。生成网站位于 `book/`。需要预览时，先构建，再运行 `mdbook serve --open`；编辑原文后重新执行构建命令，同步生成书稿。
+该命令检查公开源文件、准备书稿、安装插件随附的 Mermaid 前端资源、运行 mdBook 并检查输出。生成网站位于 `design/book/`。需要预览时，先构建，再运行 `mdbook serve design --open`；编辑原文后重新执行构建命令，同步生成书稿。
 
-其他入口：`python3 scripts/docs.py check` 检查源文件和索引；`prepare` 只生成书稿；`verify` 检查已有 HTML 输出。它们只处理文档，不运行设计中的实验、模型请求或产品程序。原 Mermaid 围栏直接转成图表，资源随网站发布，不依赖浏览器临时访问第三方图表 CDN。
+其他入口：`python3 design/scripts/docs.py check` 检查源文件和索引；`prepare` 只生成书稿；`verify` 检查已有 HTML 输出。它们只处理文档，不运行设计中的实验、模型请求或产品程序。原 Mermaid 围栏直接转成图表，资源随网站发布，不依赖浏览器临时访问第三方图表 CDN。
 
-页面中的 Mermaid 图和 SVG 图片可点击打开预览，使用滚轮或加减按钮缩放、拖动平移，并可适应窗口；按 Esc 或点击关闭按钮返回正文。键盘可用 Tab 选中图表，按 Enter 打开。预览脚本与样式维护在 `theme/svg-viewer.js` 和 `theme/svg-viewer.css`，由 `book.toml` 注入，随站点发布，不修改插件自动生成的文件。
+页面中的 Mermaid 图和 SVG 图片可点击打开预览，使用滚轮或加减按钮缩放、拖动平移，并可适应窗口；按 Esc 或点击关闭按钮返回正文。键盘可用 Tab 选中图表，按 Enter 打开。预览脚本与样式维护在 `design/theme/svg-viewer.js` 和 `design/theme/svg-viewer.css`，由 `design/book.toml` 注入，随站点发布，不修改插件自动生成的文件。
 
 <a id="github-pages"></a>
 
