@@ -1,6 +1,6 @@
 # 文档构建、公开范围与 GitHub Pages
 
-用途：文档发布维护｜更新：2026-09-21。
+用途：文档发布维护。
 
 [项目入口](../README.md) · [文档索引](README.md) · [文档规范](documentation-guide.md)
 
@@ -43,6 +43,8 @@ python3 scripts/docs.py build
 
 其他入口：`python3 scripts/docs.py check` 检查源文件和索引；`prepare` 只生成书稿；`verify` 检查已有 HTML 输出。它们只处理文档，不运行设计中的实验、模型请求或产品程序。原 Mermaid 围栏直接转成图表，资源随网站发布，不依赖浏览器临时访问第三方图表 CDN。
 
+页面中的 Mermaid 图和 SVG 图片可点击打开预览，使用滚轮或加减按钮缩放、拖动平移，并可适应窗口；按 Esc 或点击关闭按钮返回正文。键盘可用 Tab 选中图表，按 Enter 打开。预览脚本与样式维护在 `theme/svg-viewer.js` 和 `theme/svg-viewer.css`，由 `book.toml` 注入，随站点发布，不修改插件自动生成的文件。
+
 <a id="github-pages"></a>
 
 ## GitHub 工作流
@@ -53,7 +55,7 @@ python3 scripts/docs.py build
 
 工作流从官方 release 下载固定版本工具，并校验对应 SHA-256。升级时同时更新版本、下载摘要和这里的说明，再检查构建、站内链接及 Mermaid；第三方工具版本不是 TinyAGI 产品版本。
 
-依据于 2026-09-21 核对：[mdBook 的 CI 说明](https://rust-lang.github.io/mdBook/continuous-integration.html)、[mdbook-mermaid 配置](https://github.com/badboy/mdbook-mermaid#configure-your-mdbook-to-use-mdbook-mermaid)、[GitHub Pages 自定义工作流](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages)。
+依据：[mdBook 的 CI 说明](https://rust-lang.github.io/mdBook/continuous-integration.html)、[mdbook-mermaid 配置](https://github.com/badboy/mdbook-mermaid#configure-your-mdbook-to-use-mdbook-mermaid)、[GitHub Pages 自定义工作流](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages)。
 
 本仓库的章节筛选与发布检查是自身构建规则。
 

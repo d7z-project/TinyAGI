@@ -6,13 +6,13 @@
 
 ## 1. 条件与执行
 
-在保留 DESIGN v2.2 后固定18 例预登记，再编写独立脚本。provider 保存进入／关闭状态，world 独立追加效果，authority 保存证据与资源账务；库间无事务。Python 3.14.7、SQLite 3.53.4，WAL／FULL，子进程通过管道屏障协调。
+先固定 18 例预登记，再编写独立脚本。provider 保存进入／关闭状态，world 独立追加效果，authority 保存证据与资源账务；库间无事务。Python 3.14.7、SQLite 3.53.4，WAL／FULL，子进程通过管道屏障协调。
 
 备份和恢复使用 SQLite backup API，并在实验进程已退出、连接关闭后进行。world 不随 provider 回退，模拟真实效果不因业务备份恢复而撤销。恢复分支只读 provider 状态，效果表用于评分。B4/B5 的入口关闭、旧进程隔离和新工作资源／预算核对由实验驱动保证，不是自动灾备实现。
 
 首次完整运行通过：**18 例、52 个子进程、2 次 SIGKILL、270 项检查，错误 0**。原始 JSON 保存事件、参数、中间状态和终态。所有子进程均按预期退出，无兜底清理强杀；断言数含屏障／退出码，不是独立样本数，也不表示故障概率。
 
-当前无 postgres／psql／initdb、kubectl 或 kind。docker 命令实际进入 Podman，查询配置即因运行目录只读失败，未启动容器或安装软件。PostgreSQL、etcd、Kubernetes 与 gRPC 的真实恢复／取消行为通过[一手资料](../runtime-protocol.md#recovery)约束，未计入本实验通过数。
+当时的 docker 命令实际进入 Podman，查询配置因运行目录只读失败，未启动容器或安装软件。实际成绩仅来自上述 SQLite 与受控子进程条件；其他数据库、集群及网络协议的恢复／取消行为未计入通过数。
 
 ## 2. 对照结果
 

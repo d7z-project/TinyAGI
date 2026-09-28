@@ -1,0 +1,127 @@
+main .svg-zoomable {
+    cursor: zoom-in;
+}
+
+main .svg-zoomable:focus-visible,
+.svg-viewer button:focus-visible,
+.svg-viewer-stage:focus-visible {
+    outline: 2px solid var(--links, #4183c4);
+    outline-offset: 3px;
+}
+
+html.svg-viewer-open {
+    overflow: hidden;
+}
+
+.svg-viewer {
+    box-sizing: border-box;
+    width: 96vw;
+    max-width: 1600px;
+    height: 92vh;
+    height: 92dvh;
+    max-height: none;
+    margin: auto;
+    padding: 0;
+    border: 1px solid var(--table-border-color, #999);
+    border-radius: 10px;
+    background: var(--bg, white);
+    color: var(--fg, #222);
+    box-shadow: 0 12px 60px #0006;
+}
+
+.svg-viewer[open] {
+    display: flex;
+    flex-direction: column;
+}
+
+.svg-viewer::backdrop {
+    background: #0009;
+}
+
+.svg-viewer-toolbar {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--table-border-color, #ddd);
+}
+
+.svg-viewer-title {
+    margin-right: auto;
+    font-weight: 600;
+}
+
+.svg-viewer button {
+    min-width: 40px;
+    min-height: 40px;
+    padding: 6px 12px;
+    border: 1px solid var(--table-border-color, #bbb);
+    border-radius: 5px;
+    background: var(--theme-hover, #eee);
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+}
+
+.svg-viewer output {
+    min-width: 4.5em;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+}
+
+.svg-viewer-stage {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+    cursor: grab;
+    touch-action: none;
+    user-select: none;
+}
+
+.svg-viewer-stage.is-dragging {
+    cursor: grabbing;
+}
+
+.svg-viewer-artwork {
+    position: absolute;
+    top: 0;
+    left: 0;
+    transform-origin: 0 0;
+    pointer-events: none;
+}
+
+.svg-viewer-artwork > svg,
+.svg-viewer-artwork > img {
+    display: block;
+    width: 100% !important;
+    height: 100% !important;
+    max-width: none !important;
+    max-height: none !important;
+    margin: 0;
+}
+
+.svg-viewer-help {
+    margin: 0;
+    padding: 8px 12px;
+    font-size: 1.2rem;
+    text-align: center;
+}
+
+@media (max-width: 480px) {
+    .svg-viewer-title {
+        flex-basis: 100%;
+    }
+
+    .svg-viewer-toolbar {
+        justify-content: center;
+        gap: 6px;
+    }
+}
+
+@media print {
+    .svg-viewer {
+        display: none !important;
+    }
+}

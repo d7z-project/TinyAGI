@@ -12,7 +12,8 @@ create-missing = false
 command = "mdbook-mermaid"
 
 [output.html]
-additional-js = ["mermaid.min.js", "mermaid-init.js"]
+additional-js = ["mermaid.min.js", "mermaid-init.js", "theme/svg-viewer.js"]
+additional-css = ["theme/svg-viewer.css"]
 default-theme = "light"
 preferred-dark-theme = "navy"
 smart-punctuation = true

@@ -1,12 +1,14 @@
 # 设计依据与实验索引
 
-用途：证据索引｜更新：2026-09-26。
+用途：证据索引。
 
 [总设计](../DESIGN.md#decisions) · [文档索引](README.md) · [设计状态与边界](research-plan.md)
 
 本篇汇总已有实验、设计依据和一手来源。各报告说明实际条件、统计、失败及适用边界；论文、标准和依赖库保留对应版本，不能将不同条件下的结果混用。
 
 目录：[整体任务实验](#whole-task-experiments) · [机制实验](#mechanism-experiments) · [按问题查依据](#topics) · [设计机制依据](#design-closure) · [主动学习依据](#active-learning-sources) · [任务解耦与控制依据](#task-control-sources) · [跨模块一致性依据](#consistency-basis) · [既有论文与标准](#sources)
+
+主体持续运行、自主意愿与可演化认知是系统目标；既有受托任务实验仅支持相应局部机制，不决定全部认知必须采用任务流程。正常认知和机密信任边界的设计取舍见[决策台账](research-plan.md#whole-system)。
 
 实验报告按运行时的条件解释。分布式接管等历史方案不属于当前架构，其实验也不能证明现行系统具备相同机制。
 
@@ -23,7 +25,7 @@
 | 报告 | 实际验证范围 | 不能由此证明 |
 | --- | --- | --- |
 | <a id="report-011"></a>011 · [完整活动评价](experiments/011-whole-activity-evaluation.md) | 固定阶段的活动输入、预编排产物和已知失败可被所列客观条件区分；语义盲区保持待审 | 无参试模型、真实联系人或语义质量成绩，不能证明工作区／情感／协作收益 |
-| <a id="report-012"></a>012 · [投影、修订与提醒](experiments/012-projection-alarm-activity.md) | 本地文件、读取缓存和真实计时输入可与资料修订、产物交付及分别结束相接；旧证据与漏交付控制失败被保留 | 预编排策略和合成参数；不是模型判断、KV 性能、目录发现率或真实通知效果 |
+| <a id="report-012"></a>012 · [投影、修订与提醒](experiments/012-projection-alarm-activity.md) | 本地文件、读取缓存和真实计时输入可与资料修订、产物交付及分别结束相接；旧证据与漏交付控制失败被保留 | 预编排策略和合成参数；不是模型判断、外部检索性能、目录发现率或真实通知效果 |
 | <a id="report-013"></a>013 · [资源发现与用途](experiments/013-resource-discovery.md) | 当前文档快照中，元数据与主动内容查询提供不同候选；用途范围可缩小搜索，命中仍须阅读核对 | 公开开发查询、词面算法及人工用途标签；不是模型理解、检索泛化或清理后的性能提升 |
 | <a id="report-014"></a>014 · [单宿主组合](experiments/014-host-composition.md) | 实际 Go／go-mini／SQLite／文件／HTTP 可在单程序接续简单完整任务；无依据、未交付和错误请求控制有区分 | 确定提供者、虚拟时间及有限域装配；没有模型质量、完整沙箱、厂商接口或产品成绩 |
 | <a id="report-015"></a>015 · [任务验收与模型对照](experiments/015-task-outcome-contract.md) | 合理路径／过程失败控制；两模型在合成资料任务中的读取、更正、交付与打断；内容审阅发现历史解释问题 | 单任务结构、每条件一次；非完整沙箱／攻击测试，无广泛组织收益、真人体验或正式采用结论；服务修复前失败另列 |
@@ -59,7 +61,7 @@
 
 库执行、MRPC 和生命周期事实沿[固定提交记录](go-mini-integration.md#library-facts)解释；人格整合与学习自主性来自用户目标及设计取舍，不伪装成已测认知收益。
 
-新增[跨契约检查场景](sandbox-evaluation.md#contract-consistency-evaluation)只使预期行为可核对；证据成绩仍由原报告维护，完整副本重建细则仍保留台账中的建议状态。
+[跨契约检查场景](sandbox-evaluation.md#contract-consistency-evaluation)明确预期行为；主体级试验按[装配契约](sandbox-evaluation.md#trial-subject)说明初态、激活工作、环境覆盖及评价限制。实际证据仍由原报告维护，设计规格不计作试验成绩。
 
 <a id="topics"></a>
 
@@ -75,19 +77,22 @@
 | 关注、计划与程序复用 | [目标与计划](../DESIGN.md#attention-planning) | [混合主动交互原则](#source-mixed-initiative)、[Plan-and-Act：动态重规划](#source-plan-and-act)、[Voyager：程序积累](#source-voyager) |
 | 来源修订、路由与版本采用 | [来源与能力](../DESIGN.md#knowledge) | [PROV-DM：来源与修订](#source-prov)、[RouteLLM：模型路由](#source-routellm)、[AI Agents That Matter：成本与泛化](#source-agent-evaluation) |
 | 意愿、规范、身份、情感 | [交流与情境](interaction-design.md) | [交互设计的资料与边界](interaction-design.md#validation)；[报告 016](#report-016)补充合成人物／受众场景，不提供真实身份或情感效果的保证 |
-| 投影、外部事件源、缓存与沙箱 | [资源](projection-input-and-compute.md)、[沙箱](sandbox-evaluation.md) | 各篇来源表保留具体版本与未测范围；计时夹具不证明核心必须内置闹钟 |
-| 统一资源、Secret 类型及情境投影 | [公共属性与类型规则](projection-input-and-compute.md#resource-contract)、[操作接纳](runtime-protocol.md#resource-operations) | [NIST 属性授权与 W3C 来源模型](projection-input-and-compute.md#resource-evidence)，2026-09-21 查阅；支持概念组织，报告 012／013 不证明完整资源契约或机密隔离已测 |
-| 可选隔离执行与高风险能力 | [准入与运行](runtime-protocol.md#isolated-execution)、[试验分工](sandbox-evaluation.md#isolation) | [容器、Rootless、资源约束与 gVisor 官方资料](engineering-reference.md#container-sources)，2026-09-26 查阅；支持工程选择与适用条件，不是本项目隔离、兼容性或性能实测 |
+| 投影、外部事件源、缓存与沙箱 | [资料与视图](materials-and-context.md)、[沙箱](sandbox-evaluation.md) | 各篇来源表保留具体版本与未测范围；计时夹具不证明核心必须内置闹钟 |
+| 领域对象、资料与受限视图 | [所有权与关系](materials-and-context.md#domain-objects)、[操作接纳](runtime-protocol.md#domain-operations) | [Microsoft 领域分析、NIST 属性授权与 W3C 来源模型](materials-and-context.md#domain-evidence)，各来源记录适用版本与支持命题；支持职责及关联设计，报告 012／013 不证明全部领域接入已测 |
+| 接纳、授权与记忆纠正闭环 | [接纳前处理](whole-system-design.md#request-intake)、[授权来源](runtime-protocol.md#capability-authority)、[记忆生命周期](whole-system-design.md#memory-lifecycle)、[上下文失效](materials-and-context.md#context-validity)、[交付纠正](whole-system-design.md#delivery-correction) | [NIST 属性授权、RFC 8693 委托与 W3C 来源模型](materials-and-context.md#domain-evidence)；资料支持职责区分，接纳范围、保留及纠正规则属于本项目设计，未作端到端实测 |
+| 独立机密、授权分配、原值交付与审计 | [机密管理](management-workspace.md#secret-management)、[调用契约](runtime-protocol.md#secret-contract)、[评价规格](sandbox-evaluation.md#secret-evaluation) | [OWASP 与 Vault 官方资料](management-workspace.md#secret-sources)、[go-mini 固定源码](go-mini-integration.md#secret-rpc-facts)；支持最小权限、生命周期、审计及接入设计，不证明本项目端到端隔离已测 |
+| 可选隔离执行与高风险能力 | [准入与运行](runtime-protocol.md#isolated-execution)、[试验分工](sandbox-evaluation.md#isolation) | [容器、Rootless、计算资源约束与 gVisor 官方资料](engineering-reference.md#container-sources)；支持工程选择与适用条件，不是本项目隔离、兼容性或性能实测 |
 | 统一事件与活动接续 | [事件主线](../DESIGN.md#event-driven)、[共同协议](runtime-protocol.md#events) | [CloudEvents 参考与证据边界](runtime-protocol.md#event-sources-evidence)；报告 012／014 为局部流程，016／017 补充受控来源与接续对照；完整体系未测 |
-| 能力评估、回归与采用门槛 | [测试集及基线比较](sandbox-evaluation.md#evaluation-design) | [评估一手依据及查阅日期](sandbox-evaluation.md#evaluation-sources)；报告 011／012／014 仅有局部控制，真实模型能力基线未建 |
+| 能力评估、回归与采用门槛 | [测试集及基线比较](sandbox-evaluation.md#evaluation-design) | [评估一手依据](sandbox-evaluation.md#evaluation-sources)；报告 011／012／014 仅有局部控制，真实模型能力基线未建 |
+| 主体级试验与可选状态导入 | [初态及激活范围](sandbox-evaluation.md#trial-subject)、[环境覆盖](sandbox-evaluation.md#trial-environment) | [AgentDojo、Temporal 与 SQLite 资料](sandbox-evaluation.md#trial-sources)；支持区分任务评价、状态保存及历史重放，按问题装配是本项目设计，未取得成本或可靠性改善的实测 |
 | 逻辑模块、模型端口与工程映射 | [逻辑契约](runtime-protocol.md#software-modules)、[软件与技术选择](engineering-reference.md#software-modules) | [官方依据与版本](engineering-reference.md#stack-sources)、[宿主组合报告](experiments/014-host-composition.md) |
-| 公共 API 与本地／远程向量接入 | [接入选型与取舍](engineering-reference.md#vector-service)、[公共契约](runtime-protocol.md#capability-api) | [官方契约及查阅日期](engineering-reference.md#vector-sources)支持客户端连接方式；公共 API 是工程设计，尚无本地／远程 SDK 组合、性能或任务效果实测 |
+| 领域检索与同级外部提供者 | [检索分工](runtime-protocol.md#retrieval)、[接入与取舍](engineering-reference.md#retrieval-providers)、[评价](sandbox-evaluation.md#retrieval-evaluation) | [Attemory 官方接口](engineering-reference.md#retrieval-sources)和[向量服务契约](engineering-reference.md#vector-sources)支持接入方式；尚无本项目外部服务组合、检索质量或完整任务收益实测 |
 
 <a id="task-contract-sources"></a>
 
 ## 完整任务验收与交互环境的补充依据
 
-查阅日期：**2026-09-20**。以下均核对固定论文修订的正文；支持设计取舍，不替代本项目模型实测，也不引入论文使用的部署架构。
+以下均核对固定论文修订的正文；支持设计取舍，不替代本项目模型实测，也不引入论文使用的部署架构。
 
 | 来源与适用位置 | 支持的命题 | 本项目采用／不直接采用的部分 |
 | --- | --- | --- |
@@ -101,7 +106,7 @@
 
 ## 设计机制的一手资料
 
-**查阅／复核日期：2026-09-20。** 本节是基础机制的资料论证记录，全部按[设计决策台账](research-plan.md#remaining-questions)收尾。这份资料记录来自检索和阅读，不包含新增模型调用、实验或作者结果复现。固定论文修订与标准日期；在线厂商文档仅代表查阅日所见契约，没有锁定本项目安装版本。下面分开来源命题与本项目推论，未列出的性能、可靠性和真人效果不在支持范围。
+本节是基础机制的资料论证记录，全部按[设计决策台账](research-plan.md#remaining-questions)收尾。这份资料记录来自检索和阅读，不包含新增模型调用、实验或作者结果复现。固定论文修订与标准日期；在线厂商文档用于说明接口契约，没有锁定本项目安装版本。下面分开来源命题与本项目推论，未列出的性能、可靠性和真人效果不在支持范围。
 
 <a id="closure-evaluation"></a>
 
@@ -138,7 +143,7 @@
 | [Self-RAG，修订 1，2023-10-17](https://arxiv.org/abs/2310.11511v1)，摘要 | 无差别固定检索可能无益，论文通过训练支持按需检索与证据评价 | 根据当前缺口选择读取，证据不足可停止并保留未知；本项目不以专门训练为前提，也不声称现成模型具有相同效果 |
 | [W3C PROV-DM，Recommendation，2013-04-30](https://www.w3.org/TR/2013/REC-prov-dm-20130430/)，§§5.2–5.3 | 可表达派生、修订、引用、来源与归属 | 观测与当前断言分开，同源传播可回查；来源图不自动证明真假、独立性或隐私许可 |
 
-向量召回只产生可核对候选，原始证据与人物许可不由检索得分替代。embedding、切分与额度是带身份的用途配置，设计不留“先证明普遍最优检索”这一前置任务。
+外部检索返回可核对候选，原始证据和许可不由排名替代。领域入口、提供者选择、准备范围及额度分别配置，不预设通用最优策略；具体服务支持范围见[检索接入资料](engineering-reference.md#retrieval-sources)。
 
 <a id="closure-minds"></a>
 
@@ -153,14 +158,13 @@
 
 <a id="closure-capabilities"></a>
 
-### 公共能力、事件、向量与计算缓存
+### 公共能力、事件与外部检索
 
 | 来源及定位 | 资料支持什么 | 采用推论与适用边界 |
 | --- | --- | --- |
 | [CloudEvents 1.0.2](https://github.com/cloudevents/spec/blob/v1.0.2/cloudevents/spec.md)，Context Attributes／Event Data | 统一事件描述可区分来源、类型、标识与数据 | 参考其信封思路，内部关联、订阅、接续及责任语义由本项目定义；不宣称完整兼容、传输可靠性或必须事件溯源 |
-| [Qdrant 官方 Go SDK](https://github.com/qdrant/go-client)，查阅日 README Creating a client／查询示例；[Local Quickstart](https://qdrant.tech/documentation/quickstart/) | gRPC SDK 提供本机与 API key／TLS 远程连接、写入、查询及过滤；有本地单节点部署路径 | 当前默认选 Qdrant＋Go SDK，同一适配器可配置本地／远程；选择基于职责匹配及接入方式，不是速度冠军或已测组合。技术正文在[工程参考](engineering-reference.md#vector-service) |
-| [vLLM v0.9.2 Automatic Prefix Caching](https://docs.vllm.ai/en/v0.9.2/features/automatic_prefix_caching.html)，Introduction／Limits | 复用相同前缀的 KV 可减少预填充，不能降低新 token 解码时间 | KV 生命周期交推理组件，读取缓存、前缀计算复用和减少生成分别处理；这是组件分工依据，不强制选 vLLM，也不声称网关提供相同能力 |
-| [DeepSeek Thinking Mode](https://api-docs.deepseek.com/guides/thinking_mode/)，查阅日 Tool Calls／投入说明 | 普通消息与原生工具链的推理续接要求存在区别，提供者有自己的投入参数 | 适配器声明并保留所需关联／续接信息，工具提案仍经宿主接纳；网关别名、参数透传与费用口径不由上游文档保证 |
+| [Qdrant 官方 Go SDK](https://github.com/qdrant/go-client)，README Creating a client／查询示例；[Local Quickstart](https://qdrant.tech/documentation/quickstart/) | gRPC SDK 提供本机与 API key／TLS 远程连接、写入、查询及过滤；有本地单节点部署路径 | 向量路线初始配置为 Qdrant＋Go SDK，同一适配器可配置本地／远程；其他提供者同级接入；选择基于职责匹配及接入方式，不是速度冠军或已测组合。技术正文在[工程参考](engineering-reference.md#vector-service) |
+| [DeepSeek Thinking Mode](https://api-docs.deepseek.com/guides/thinking_mode/)，Tool Calls／投入说明 | 普通消息与原生工具链的推理续接要求存在区别，提供者有自己的投入参数 | 适配器声明并保留所需关联／续接信息，工具提案仍经宿主接纳；网关别名、参数透传与费用口径不由上游文档保证 |
 
 默认按活动使用固定模型配置，动态路由保留为可选扩展，不自动开启。流式增量、结构化结果和终止状态分别表达；不支持的能力返回限制，不静默修改业务含义。原生工具及结构输出的补充契约见[既有工程来源](engineering-reference.md#stack-sources)。
 
@@ -172,7 +176,7 @@
 | --- | --- | --- |
 | [Reflexion，修订 4，2023-10-10](https://arxiv.org/abs/2303.11366v4)，摘要 | 语言反馈与情节记忆可影响后续尝试，不必更新权重 | 先形成有来源和适用条件的经验候选；反馈质量及来源分开记录，不把一次反思当作已学会 |
 | [Voyager，修订 2，2023-10-19](https://arxiv.org/abs/2305.16291v2)，摘要 | Minecraft 环境中可通过反馈积累可组合程序，并在新世界使用技能库 | 保留程序知识和带条件的复用路径；不引入特定机器人形态，也不把游戏迁移当现实任务迁移 |
-| [Wasmtime Security](https://docs.wasmtime.dev/security.html)，查阅日 WebAssembly Core／Filesystem Access | 外部交互经显式接口，文件访问采用能力方式约束 | 沙箱独立状态、可写范围和受控能力必须在装配中落实；借鉴隔离职责，不选择该运行时，也不宣称 go-mini 自动继承其隔离保证 |
+| [Wasmtime Security](https://docs.wasmtime.dev/security.html)，WebAssembly Core／Filesystem Access | 外部交互经显式接口，文件访问采用能力方式约束 | 沙箱独立状态、可写范围和受控能力必须在装配中落实；借鉴隔离职责，不选择该运行时，也不宣称 go-mini 自动继承其隔离保证 |
 
 两阶段复盘、逐能力门槛、固定参考和有限采用是本项目结合反馈学习及 能力评价原则的设计。该机制选择已收尾，没有新迁移成绩。获准的主动学习与候选采用见下方补充，不从资料本身推导执行授权或模型权重修改。
 
@@ -180,7 +184,7 @@
 
 ### 主动学习、自动课程与学习策略迭代
 
-查阅日期：2026-09-20；以下使用固定论文修订的摘要与研究范围，不采用其成绩作为 TinyAGI 的实测数据。接口与强度控制来自本项目职责设计及用户要求，具体算法不照搬为默认实现。
+以下使用固定论文修订的摘要与研究范围，不采用其成绩作为 TinyAGI 的实测数据。接口与强度控制来自本项目职责设计及用户要求，具体算法不照搬为默认实现。
 
 | 一手来源及版本 | 支持的命题 | 设计推论与适用边界 |
 | --- | --- | --- |
@@ -212,7 +216,7 @@
 
 ## 既有论文与标准
 
-下表查阅日期均为 **2026-09-19**。引用原论文、正式发表入口或官方标准；没有复现作者实验。采用固定版本，避免把不同修订的结果混用。
+引用原论文、正式发表入口或官方标准；没有复现作者实验。采用固定版本，避免把不同修订的结果混用。
 
 | ID | 资料、论文修订与日期 | 来源定位 | 支持的有限命题 | 不能外推的项目效果 |
 | --- | --- | --- | --- | --- |
@@ -228,12 +232,12 @@
 | <a id="source-plan-and-act"></a>P10 | [Plan-and-Act，论文修订 3，2025-04-22](https://arxiv.org/html/2503.09572v3) | §3.3 动态重规划，§5 实验条件与 §6 后的 Limitations | 分离高层计划与具体动作、根据观察修订计划有研究依据；实验涉及专门训练的模型 | 现成模型能否选择合适重规划时机，额外成本是否值得；不直接外推论文成绩 |
 | <a id="source-voyager"></a>P11 | [Voyager，论文修订 2，2023-10-19](https://arxiv.org/html/2305.16291v2) | §2.2 可复用代码，§2.3 执行反馈与迭代 | Minecraft 中可将已成功的程序积累、检索和组合，用于后续任务 | 普通程序包的实际复用收益与适用边界，不证明一般认知演化或现实任务迁移 |
 | <a id="source-prov"></a>P12 | [PROV-DM，W3C Recommendation，2013-04-30](https://www.w3.org/TR/2013/REC-prov-dm-20130430/) | §5.2 推导、修订、引用与原始来源；§5.3 归属 | 可以分别表达来源、生成过程及修订关系，帮助评估材料 | 不能由来源图直接判定事实正确；断言抽取与语义冲突识别需另测 |
-| <a id="source-routellm"></a>P13 | [RouteLLM，论文修订 4，2025-02-23](https://arxiv.org/html/2406.18665v4) | §3 路由目标、§4 偏好数据与方法 | 偏好数据训练与阈值选择可用于研究模型质量／成本取舍 | 当前模型、完整多步任务、失败切换与本机资源条件尚未验证 |
+| <a id="source-routellm"></a>P13 | [RouteLLM，论文修订 4，2025-02-23](https://arxiv.org/html/2406.18665v4) | §3 路由目标、§4 偏好数据与方法 | 偏好数据训练与阈值选择可用于研究模型质量／成本取舍 | 当前模型、完整多步任务、失败切换与本机计算资源条件尚未验证 |
 | <a id="source-agent-evaluation"></a>P14 | [AI Agents That Matter，论文修订 1，2024-07-01](https://arxiv.org/html/2407.01502v1) | §2 成本控制、§3 联合评价、§5 保留样本 | 只看准确率会遗漏成本；保留任务需匹配希望宣称的泛化范围 | 本项目采用阈值、真实用途评价与长期回归仍需实际数据 |
 
 这些资料分别支持设计动机、条件和反例，不组成 TinyAGI 整体认知有效的证明。交付与跟进的划分主要来自用户任务的职责分析，未声称由论文直接验证。
 
-管理工作台的副本、动态编辑、模型维护及机密交互依据见[管理专题资料表](management-workspace.md#sources)。2026-09-20 查阅 JSON Forms、Node-RED、LangGraph、Ollama 官方文档及 OWASP Secrets Management、Forgot Password 和 W3C Secure Contexts；支持范围包括声明式界面、能力维护、凭据生命周期、受限提交会话和可信来源，不能据此保证端到端隔离。go-mini 固定提交依据见[库接入参考](go-mini-integration.md#management-library-review)。统一资源与 Secret 类型的共同定义及资料见[资源专题](projection-input-and-compute.md#resource-evidence)。
+管理工作台的试验操作、动态编辑、模型维护及机密交互依据见[管理专题资料表](management-workspace.md#sources)。JSON Forms、Node-RED、LangGraph、Ollama 官方文档及 OWASP Secrets Management、Forgot Password 和 W3C Secure Contexts 支持范围包括声明式界面、能力维护、凭据生命周期、受限提交会话和可信来源，不能据此保证端到端隔离。go-mini 固定提交依据见[库接入参考](go-mini-integration.md#management-library-review)。领域边界与来源关系的依据见[资料专题](materials-and-context.md#domain-evidence)；独立机密的授权、交付和审计采用[专项依据](management-workspace.md#secret-sources)，其工程接入依据另见[RPC 源码记录](go-mini-integration.md#secret-rpc-facts)。
 
 来源支持相关分工；当前方案状态见[台账](research-plan.md#management-extension)，未增加实验成绩。
 
@@ -275,7 +279,7 @@
 
 ## 交流与协作的补充依据
 
-查阅日期：2026-09-19。以下保留来源版本、支持命题及适用边界；未复现论文实验，不能将论文表现视为 TinyAGI 的实测结果。
+以下保留来源版本、支持命题及适用边界；未复现论文实验，不能将论文表现视为 TinyAGI 的实测结果。
 
 ### 协作与人格
 
