@@ -4,6 +4,8 @@
 
 [文档索引](README.md) · [工程映射](engineering-reference.md#vm-deployment) · [总体设计](../DESIGN.md#vm-deployment) · [设计状态](research-plan.md#research-status)
 
+[性能更新复核](experiments/020-go-mini-performance-recheck.md)固定 `6a4047e` 源码与 `0.0.19-git.gfc9366c` npm 包：工作台 14 项主链路和受影响的 Go 目标测试通过，原两个浏览器工作区仍触发步数限制；本次为增量核对。
+
 [库回归报告](experiments/018-go-mini-library-validation.md)以提交 `fbb16ee99748e84b523bbd677bd477258c358956` 为更新基线，分别记录源码核对、库测试和跨语言互通结果。[宿主组合实验](experiments/014-host-composition.md)仍按原提交 `2f58a21748b92bae83ee37cca570ceb9bf387692` 解释，不将新库测试外推为完整主体组合已经重测。
 
 第 1 节按各自固定提交记录库行为与适用边界，其余章节维护宿主接入设计。运行分段、步骤约束和部署流程按当前[设计决策与边界](research-plan.md#remaining-questions)解释。库接口存在或回归通过不等于系统设计已经端到端实现。
@@ -14,13 +16,23 @@ TinyAGI 的独立研究模块使用同一提交执行了[生命周期与补丁�
 
 上游资料：[架构](https://github.com/d7z-team/mini-go/blob/main/ARCHITECTURE.md)、[使用指南](https://github.com/d7z-team/mini-go/blob/main/USAGE.md)、[RPC 指南](https://github.com/d7z-team/mini-go/blob/main/RPC.md)。这些概览链接跟随上游主分支；下方事实表中的源码链接使用对应固定提交。
 
-本篇目录：[证据范围](#source-snapshots)／[更新基线](#current-verification)／[编译缓存](#compiler-cache-facts)／[后续库更新](#update-verification) · [1. 已确认的基础](#library-facts)／[管理补充核对](#management-library-review)／[命名入口依据](#managed-entry-facts)／[RPC 与嵌入补充](#rpc-extension-facts)／[机密 RPC 接入](#secret-rpc-facts)／[JavaScript RPC](#javascript-rpc-facts)／[弃用与源码事实](#deprecation-facts)／[任务执行与控制依据](#task-control-facts)／[预制库依据](#prebuilt-library-facts)／[初始化适配](#bootstrap-adapter)／[主动学习接入](#active-learning-adapter) · [2. 三层分工](#responsibilities) · [3. 认知循环与运行分段](#runtime-segments) · [4. 业务安全边界与补丁提交](#patch) · [5. 部署标识与崩溃恢复](#deployment) · [6. 回收与关闭](#cleanup) · [7. 影子验证的边界](#shadow-validation)。
+本篇目录：[证据范围](#source-snapshots)／[性能更新](#performance-update)／[更新基线](#current-verification)／[编译缓存](#compiler-cache-facts)／[后续库更新](#update-verification) · [1. 已确认的基础](#library-facts)／[管理补充核对](#management-library-review)／[命名入口依据](#managed-entry-facts)／[RPC 与嵌入补充](#rpc-extension-facts)／[机密 RPC 接入](#secret-rpc-facts)／[JavaScript RPC](#javascript-rpc-facts)／[浏览器与界面工具](#browser-workspace-facts)／[弃用与源码事实](#deprecation-facts)／[任务执行与控制依据](#task-control-facts)／[预制库依据](#prebuilt-library-facts)／[初始化适配](#bootstrap-adapter)／[主动学习接入](#active-learning-adapter) · [2. 三层分工](#responsibilities) · [3. 认知循环与运行分段](#runtime-segments) · [4. 业务安全边界与补丁提交](#patch) · [5. 部署标识与崩溃恢复](#deployment) · [6. 回收与关闭](#cleanup) · [7. 影子验证的边界](#shadow-validation)。
 
 <a id="source-snapshots"></a>
 
 ## 源码版本与证据范围
 
 下方事实表按提交标识引用源码。复查时使用对应提交，不能以主分支当前内容代替历史证据。源码中存在测试用例，只能证明该用例已经定义；实际运行结果另见实验报告。
+
+<a id="performance-update"></a>
+
+### 性能更新与消费端复核
+
+固定源码 `6a4047e` 与 npm `0.0.19-git.gfc9366c`；性能实现来自提交 `fc9366c`，之后差异仅在发布 workflow 和开发文档。更新将归一化编译限制纳入缓存身份，约束临时缓存克隆与保留，优化 Rust 任务执行／定时器开销，并调整 Go 等待和 SDK dispose。源码与分发身份、测试和未覆盖范围见[报告 020](experiments/020-go-mini-performance-recheck.md)。
+
+工作台主链路 14 项、Go 缓存及控制目标测试 37 个顶层用例通过，原生工作区和 Node 小型语言工具正常。官方 SDK 默认条件下，原完整及精简 FFI 界面仍在 `open` 返回 `step_limit`，没有新的完整浏览器编译成绩。语言服务的 `CompilerOptions` 未新增步数／堆额度配置；通用 `MiniGo.create` 另有编译工作负载及部分预算参数，两者不能混同。上游已有 Go VM 自举编译／生成产物运行验证；[覆盖及扩额对照](experiments/020-go-mini-performance-recheck.md#upstream-compiler-tests)区分后端、输入、预算与实测。资源限制终止不证明编译语义错误，实验补丁不作为发布接口；当前仍采用匹配镜像及宿主编译，浏览器工具限定已测范围。
+
+本次 npm `git` 标签指向新性能包，`latest` 仍指向较早版本；采用时固定精确包版本与完整性，不能仅按默认标签判断是否包含修复。该增量核对不覆盖全部 Rust 原生、跨语言或完整主体行为，以下早期快照继续保留各自证据范围。
 
 <a id="current-verification"></a>
 
@@ -43,7 +55,9 @@ TinyAGI 的独立研究模块使用同一提交执行了[生命周期与补丁�
 
 ### 编译缓存与增量准备
 
-同一固定提交的 [USAGE](https://github.com/d7z-team/mini-go/blob/fbb16ee99748e84b523bbd677bd477258c358956/USAGE.md)说明默认编译缓存与 `MINIGO_CACHE`；[缓存集成测试](https://github.com/d7z-team/mini-go/blob/fbb16ee99748e84b523bbd677bd477258c358956/compiler/cache/compile_integration_test.go)覆盖重复构建、优化级别及构建标签隔离、依赖实现／导出／泛型模板变更、错误命中检测和后端失败回退。缓存身份与内容校验由执行库处理，TinyAGI 记录参与构建的源码、依赖、选项和工具链，优先复用现有机制。
+报告 018 固定提交的 [USAGE](https://github.com/d7z-team/mini-go/blob/fbb16ee99748e84b523bbd677bd477258c358956/USAGE.md)说明默认编译缓存与 `MINIGO_CACHE`；[缓存集成测试](https://github.com/d7z-team/mini-go/blob/fbb16ee99748e84b523bbd677bd477258c358956/compiler/cache/compile_integration_test.go)覆盖重复构建、优化级别及构建标签隔离、依赖实现／导出／泛型模板变更、错误命中检测和后端失败回退。缓存身份与内容校验由执行库处理，TinyAGI 记录参与构建的源码、依赖、选项和工具链，优先复用现有机制。
+
+后续 `fc9366c` 将归一化限制加入缓存身份，并在克隆前估算和限制临时缓存项；目标回归支持这些机制，具体范围见[性能更新](#performance-update)。
 
 缓存命中保留的是可复用编译产物；不保存完整运行实例，不保证旧镜像跨工具链兼容，也不证明主体程序语义没有退化。重复构建的命中与失效断言属于功能验证，尚无完整业务成本或时延收益测量。[计算复用的工程边界](engineering-reference.md#efficiency-integration)
 
@@ -169,6 +183,23 @@ go-mini 固定提交 `295eb19d74305bd39c3ddf0fa88e01c52fdc446b`。以下为文�
 | [Node 测试源码](https://github.com/d7z-team/mini-go/blob/295eb19d74305bd39c3ddf0fa88e01c52fdc446b/playground/runtime-rust/runtime-wasm/tests/node.test.js)含生成 TypeScript RPC 与 Go 双向互通用例 | 表明库已有对应测试场景；证据为测试源码阅读，不代表本项目已运行该用例或完成 Node 接入 |
 
 该快照支持将能力端扩充为 Go／Rust／Node.js（npm），同时保留 Mini-Go 脚本编排及已有宿主接入。工程装配、依赖产物和生命周期见[Node 接入](engineering-reference.md#node-rpc-integration)；宿主管理 Node 服务仍属待实现设计，旧实验成绩不外推到新增路径。
+
+<a id="browser-workspace-facts"></a>
+
+### 浏览器执行、管理 RPC 与界面工具依据
+
+下表基于固定提交 `fbb16ee99748e84b523bbd677bd477258c358956` 的源码与 SDK 文档阅读，支持[工作台承载设计](engineering-reference.md#management-web)。通用库实测见[报告 018](experiments/018-go-mini-library-validation.md)；npm 包、Angular 外壳、真实浏览器 WASM 和管理 RPC 的补充实测见[报告 019](experiments/019-management-workspace-validation.md)。后者固定 npm `0.0.14-git.gae1bcd6` 及配套 Go 源码 `ae1bcd63796d5bfc93da8e93c4baedcd9d49779a`；与 `fbb16ee` 仅有发布 workflow 差异。源码事实、最小接入通过及完整产品交付分别记录。
+
+| 固定源码与事实 | TinyAGI 接入推论与边界 |
+| --- | --- |
+| [包导出](https://github.com/d7z-team/mini-go/blob/fbb16ee99748e84b523bbd677bd477258c358956/playground/runtime-rust/runtime-wasm/package.json)包括浏览器／Node 条件入口、`/rpc`、`/tools`、Worker 与 WASM；[SDK 说明](https://github.com/d7z-team/mini-go/blob/fbb16ee99748e84b523bbd677bd477258c358956/playground/runtime-rust/runtime-wasm/README.md)说明分发包含匹配编译器镜像 | 使用 npm 包的浏览器入口，构建时固定分发版本、完整性及匹配产物；本地源码版本和 npm 发布版本分别记录，不以浮动标签组成正式依赖 |
+| [浏览器 RPC 入口](https://github.com/d7z-team/mini-go/blob/fbb16ee99748e84b523bbd677bd477258c358956/playground/runtime-rust/runtime-wasm/sdk/browser-rpc.ts)与 [RPC 类型](https://github.com/d7z-team/mini-go/blob/fbb16ee99748e84b523bbd677bd477258c358956/playground/runtime-rust/runtime-wasm/sdk/rpc-types.ts)提供独立连接、绑定、调用和发布，连接选项没有自定义 HTTP 头；SDK 说明明确断线使调用／资源失效，不自动重连或重放 | 固定维护可不创建 MiniGo 程序；管理前端自己恢复连接及当前视图，不假设浏览器可附加认证头，也不自动重发不明命令 |
+| [Gateway](https://github.com/d7z-team/mini-go/blob/fbb16ee99748e84b523bbd677bd477258c358956/rpc/gateway/server.go)在 WebSocket 升级前调用配置的 `PeerInfo` 函数；未配置时使用空身份 | 可从受信 HTTP 会话绑定管理身份；登录、来源校验、当前授权与领域限制由 TinyAGI 补充，接口存在不等于已认证 |
+| [实例实现](https://github.com/d7z-team/mini-go/blob/fbb16ee99748e84b523bbd677bd477258c358956/playground/runtime-rust/runtime-wasm/sdk/runtime.ts)与 [执行选项](https://github.com/d7z-team/mini-go/blob/fbb16ee99748e84b523bbd677bd477258c358956/playground/runtime-rust/runtime-wasm/sdk/types.ts)支持 `MiniGo.create`、显式 provider、能力集合及步数／堆／队列限制；SDK 说明每实例一个 Worker | 可承载受限界面程序，装配者管理实例与允许能力；Worker、WASM 或计量字段不自动形成完整沙箱 |
+| SDK 说明由应用实现存储、console、HTTP 与 DOM，用户激活相关操作在页面处理；`patch` 保留既有调用／资源的原归属 | 库没有直接提供 TinyAGI 的界面库、绘制桥、可信输入或任意 UI 状态迁移；交互适配与显式草稿接续由客户端负责 |
+| [语言工具](https://github.com/d7z-team/mini-go/blob/fbb16ee99748e84b523bbd677bd477258c358956/playground/runtime-rust/runtime-wasm/sdk/tools.ts)提供 `createLanguageService` 及源码会话、诊断／查询和 `prepare`；SDK 说明编译器 Worker 与镜像按需使用 | 小型工作区的读取、诊断和编译已测；报告 019 的两个界面工作区在默认及[追加预算](experiments/019-management-workspace-validation.md#compiler-budgets)下均未完成打开，不能外推任意源码都可编译；可调额度来自独立实验补丁，不是当前发布接口；[诊断](experiments/019-management-workspace-validation.md#compiler-diagnosis)已核对调用契约并识别依赖展开、VM 执行及 GC 等开销。正常展示使用匹配镜像，正式候选仍由宿主接纳 |
+
+复用范围是执行、语言工具、MRPC 生成与传输；视图／事件契约、管理 Provider、领域观察、会话映射和 Angular 挂载由 TinyAGI 补充，报告 019 只实现和核对了最小实验夹具；[报告 020](experiments/020-go-mini-performance-recheck.md)在新分发物复跑主链路通过，两个浏览器源码工作区仍未通过。受控 TypeScript Provider 经生成客户端访问 Go 的路径已经通过，直接 Mini-Go RPC 也可用；两者均依赖宿主当前授权。浏览器界面实例不持有第二份主体真值，也不作为正式认知实例的远程调试入口。
 
 <a id="deprecation-facts"></a>
 

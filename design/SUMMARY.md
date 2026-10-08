@@ -49,3 +49,5 @@
 - [报告 016 · 真实模型功能事件验证](docs/experiments/016-functional-events.md)
 - [报告 017 · 任务接续、有限投入与责任退出](docs/experiments/017-continuation-study.md)
 - [报告 018 · go-mini 库回归与跨语言接入](docs/experiments/018-go-mini-library-validation.md)
+- [报告 019 · 动态管理界面与前后端接入](docs/experiments/019-management-workspace-validation.md)
+- [报告 020 · go-mini 性能更新与工作台回归](docs/experiments/020-go-mini-performance-recheck.md)

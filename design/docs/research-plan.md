@@ -17,7 +17,7 @@
 
 ## 当前范围
 
-当前处于设计阶段，以既有实验和一手资料明确机制，不推进产品实现或新增模型调用。执行库更新可单独开展固定提交的回归与接入核对；当前范围见[库更新验证](#library-validation)。逻辑设计、工程映射和实测证据分别维护，库测试不构成产品实现。
+当前处于设计阶段，以既有实验和一手资料明确机制，不推进产品实现或新增模型调用。执行库更新可单独开展固定提交的回归与接入核对，管理前后端另有隔离实验；范围分别见[库更新验证](#library-validation)和[工作台接入](#management-extension)。逻辑设计、工程映射和实测证据分别维护，库测试及实验夹具不构成产品实现。
 
 实施顺序、首批交付范围及阶段验收集中维护于[实施方案](../TODO.md)，规划中的交付和检查条件不计为已经实现或验证。
 
@@ -64,7 +64,9 @@ go-mini 以固定提交 `fbb16ee99748e84b523bbd677bd477258c358956` 作为新的�
 | 完整任务与能力评价 | 以任务契约和有效结果集合验收；分能力画像，同时计质量、责任与成本；开发／回归／保留任务分开；同条件配对、重复、独立内容复核和预先声明的用途门槛构成基线方法。这样能区分完成、恢复和过程失败 | 不用唯一参考路径、一次通过或单一自评分决定能力；论文分数不能填成本项目初始基线；不编造统一样本量或百分比门槛 | [资料](whole-system-evidence.md#closure-evaluation)；[评估规格](sandbox-evaluation.md#evaluation-design) |
 | 回应与持续活动 | 统一事件、关注表及活动工作区；认知可从内在关注或环境变化直接接续，具体活动保留下一步和投入范围；完成、等待、未知和退出分别表达。拆分保留父责任与子产物映射，转交经接纳才生效，重新接纳核对现状；跨日从持久状态接续。默认简短，复杂工作按缺口投入，主体可因兴趣／好恶调整意愿但须交代原责任 | 不靠无限推理或模型自报完成；不以内置闹钟驱动主体；不固定“低投入总是好”或全局最优调度公式。强自主属于设计目标，不宣称论文已证明合意性 | [活动依据](whole-system-evidence.md#closure-activity)、[情境依据](whole-system-evidence.md#closure-interaction)；[运行](whole-system-design.md)、[交流](interaction-design.md) |
 | 记忆与世界认知 | 领域真值、外部检索和内容读取分开；按缺口选择合格提供者，来源保留时间、修订、归属和用途。同源转述或重复命中不增加独立证据，纠正可回查，覆盖不足保留未知 | 不选检索服务作唯一事实库，不默认全量注入或提交全部服务；不按相关性自动认人或采信主张，不预设通用最优查询策略 | [记忆依据](whole-system-evidence.md#closure-memory)；[记忆](whole-system-design.md#memory)、[视图](materials-and-context.md#projection)、[检索分工](#retrieval-design) |
+| 持久状态与原始记录 | 一份 SQLite 业务库保存领域状态与短记录，本地文件保存大型内容；分别管理权威状态、原始记录／正式产物、派生和临时数据。普通原文默认长期保留，可按用途调整；主体状态不依赖聊天存续，Secret 独立保管 | 不用纯文件替代事务状态，不以摘要／外部检索替代原始依据，不永久记录每个事件，不采用全量事件溯源。短事务与有界维护适合单宿主形态；现有实验不证明业务吞吐，运行参数按实际负载确定 | [逻辑规则](runtime-protocol.md#storage)、[原始记录](materials-and-context.md#original-records)、[工程与一手依据](engineering-reference.md#storage-performance)、[容量管理](management-workspace.md#storage-management) |
 | 心智协作 | 一个主负责心智起步，有明确调查／核对／相关经历需求才邀请；独立贡献后围绕分歧交流，按证据整合。长期人格保留身份、私有经历与意愿，临时角色承担可变职责；总预算约束全部参与者 | 不默认全员讨论、固定专家人数、强制一致或以角色名授予专业性；不把采样增加的收益归因讨论，也不要求长期人格先证明提高任务得分才能存在。人数／轮次按所属认知或活动额度配置 | [协作依据](whole-system-evidence.md#closure-minds)；[组织机制](whole-system-design.md#organization) |
+| 借助工具补足模型能力 | 模型原生支持、当前可调用能力及个体使用方法分开；认知按目的选择直接处理或工具组合，派生观察回到原 Self／Mind | 已定设计；不固定全能模型或视觉人格，不承诺组合等价或更优，不扩大资料处理范围；具体质量、时延和费用按用途评价 | [主体机制](whole-system-design.md#tool-assisted-capabilities)、[契约](runtime-protocol.md#capability-fit)、[资料依据](whole-system-evidence.md#tool-composition-sources)、[评价规格](sandbox-evaluation.md#tool-composition-evaluation) |
 | 能力与模型 | 公共 API 表达请求、结果、来源、范围和能力差异；外部通知源由能力创建／接入。模型工具提案经宿主接纳，流式片段与终止分开，失败／截断／拒绝不混同。认知按用途选择已装配的模型、感知、算法和工具，提供者经接口执行实际计算 | 自动路由优化可后续扩展，不以 SDK、同名模型别名或 HTTP 成功推定兼容；不省略事实与权限核对。不恢复集群、K8s 或对象存储 | [能力依据](whole-system-evidence.md#closure-capabilities)；[公共端口](runtime-protocol.md#capability-api)、[工程选择](engineering-reference.md) |
 | 计算节约与性能保持 | 利用提供者前缀复用、稳定装配、有效结果、相同只读工作合并、增量准备及有界运行复用，减少重复工作并保留主体行为 | 不用旧答案代替独立判断，不为命中扩大上下文、冻结状态或自动降级模型；供应商机制不证明网关透传或完整收益 | [逻辑规则](materials-and-context.md#cache)、[运行](runtime-protocol.md#execution-reuse)、[一手依据](engineering-reference.md#efficiency-sources) |
 | 计算方式与可选组件 | 按缺口组合规则、经验、专用计算、轻量判断与生成式推理，减少不必要工作；外部开源实现沿已有能力体系按需接入 | 不设固定快慢主体或必经判断层；具体实现保留候选身份，不指定默认组件，资料不构成本项目收益实测 | [有限思考](materials-and-context.md#effort)；[候选与资料](engineering-reference.md#optional-cognition-components) |
@@ -80,6 +82,7 @@ go-mini 以固定提交 `fbb16ee99748e84b523bbd677bd477258c358956` 作为新的�
 | 配置对象 | 由谁在何时确定 | 设计已规定的约束 |
 | --- | --- | --- |
 | 模型、SDK、服务与设备版本 | 实际接入时由工程配置固定 | 声明能力、处理范围、费用口径与终止语义；不以同名／同结构推定等价 |
+| 存储参数与保留范围 | 实现时按目标硬件和真实访问模式确定连接、外置阈值、批次与 checkpoint；渠道、用户和用途配置保留范围 | 权威状态 WAL／FULL、短事务及文件先发布后引用；普通原文默认长期保留，容量清理不静默删除必要状态或正式内容；[性能依据](engineering-reference.md#storage-performance) |
 | 复用策略、容量与费用口径 | 接入实际提供者时声明支持方式，按用途设置保存、回收、并发与允许等待范围 | 所需信息、独立判断、期限和权限不因命中而改变；实际费用、估算与未知分开，不固化统一期限或折扣 |
 | 检索绑定、策略、材料准备与额度 | 按领域用途、实际提供者契约及语料设置 | 提供者同级，材料关联对象类型和修订，覆盖未知可见；特有参数留在对应适配，不强制全部实现支持 |
 | 主动学习强度与策略 | 有权管理者配置强度及额度，策略在范围内选择议题；具体初始档位随用途确定 | 最低关闭不自发学习；启用有界，试验主体不能提高额度；自发学习与用户明确任务分开，关闭与在途收束可见 |
@@ -172,11 +175,13 @@ Secret 独立保管、可信提交、授权使用及必要记录为已定设计�
 | 独立机密、用户归属、可信提交、授权分配及访问审计 | 已定设计；[机密机制](management-workspace.md#secret-management)，命令名及字段为示意，状态见[机密设计范围](#secret-management) |
 | 可运行试验主体 | 已定设计；按问题选择实际程序、所需初态及环境，默认暂停，只激活指定工作，按覆盖评价并有限采用；[试验契约](sandbox-evaluation.md#trial-subject) |
 | 完整状态导入 | 可选能力；用于有明确范围的迁移或长期行为评价，限定支持的状态格式、程序及环境，不要求任意扩展的通用克隆；[初态与导入](sandbox-evaluation.md#trial-initial-state) |
-| 动态表单、蓝图及代码编辑 | 类型推导、结构化注释和自动生成适配已纳入设计；[编辑映射](management-workspace.md#dynamic-editing)，具体语法与组件未冻结 |
-| 提交立即生效 | 按编写契约准备候选、调用边界切换、等待或撤销计算后接续、失败保留旧内容已纳入设计；[生效契约](management-workspace.md#apply) |
+| 固定外壳与动态业务界面 | 已定分工：外壳负责布局、会话、维护及可信输入，界面程序组织业务 UI，呈现职责独立，宿主保有状态与授权；[逻辑职责](management-workspace.md#dynamic-workspace) |
+| 工作台技术承载 | Angular 外壳、`.mgo` 界面程序、独立 TypeScript 绘制桥、npm SDK 与管理 MRPC；HTTP 保留静态文件及专用入口；[工程方案与取舍](engineering-reference.md#management-web) |
+| 界面程序、动态表单、蓝图及代码编辑 | 类型与注释生成默认入口，复杂页面由程序组合预制控件，源码与派生产物分开；[编辑映射](management-workspace.md#dynamic-editing)；具体底层控件及分发版本随实现锁定 |
+| 提交立即生效与界面接续 | 宿主准备候选并在边界采用，页面加载修订单独可见；显式草稿接续，断线重读，不重复派发已接纳操作；[生效契约](management-workspace.md#apply) |
 | 受管理函数与热加载 | 采用：宿主管长期状态、稳定函数标识、有界调用、类型与注释描述、生成入口及沙箱测试；[编写与调用契约](runtime-protocol.md#managed-functions)、[工程映射](engineering-reference.md#managed-function-tooling) |
 
-资料与未采用方案见[管理依据](management-workspace.md#sources)。既定的热加载方案降低手工适配及任意栈恢复的设计负担；收益是工程判断，未量化性能或开发成本。
+资料与未采用方案见[管理依据](management-workspace.md#sources)和[前端工程依据](engineering-reference.md#management-web-sources)。[报告 019](experiments/019-management-workspace-validation.md)总体结论为**成功，但存在性能问题**：最小面板的真实浏览器往返、控制、观察、机密分流及两种 RPC 接入已提供可行性证据。[报告 020](experiments/020-go-mini-performance-recheck.md)已复测性能更新后的官方 npm 包：主链路 14 项与所选 Go 缓存／控制回归通过，两个原界面工作区默认仍在 `open` 触发 `step_limit`。独立副本[扩额](experiments/020-go-mini-performance-recheck.md#expanded-limits)到 10 亿步、120 秒及 512 MiB／200 万对象后仍未完成打开；这些是资源／期限终止，不判作编译语义缺陷，也不抵消上游已有自举验证或本项方案可行性结论。既有基线中，浏览器本地编译仅小型范围通过，两个界面工作区在默认及[放宽预算](experiments/019-management-workspace-validation.md#compiler-budgets)下均未完成打开；步数、分配和期限失败分别保留，不能认为只增加默认额度即可解决。采用匹配镜像和宿主编译路径，不把任意源码的浏览器编译能力设为运行前提。完整界面预制库、绘制桥与正式管理接入仍待实现；性能和开发成本尚未量化，源码事实见[库参考](go-mini-integration.md#browser-workspace-facts)。[界面评价](sandbox-evaluation.md#workspace-evaluation)维护完整验收规格，实验只覆盖报告中列出的有限场景。
 
 <a id="capability-extension"></a>
 

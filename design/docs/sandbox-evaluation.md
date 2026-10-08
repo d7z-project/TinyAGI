@@ -12,7 +12,7 @@
 | 运行与复盘 | [完整流程](#lifecycle) · [复盘与采用](#review) |
 | 评价方法 | [评估层次](#evaluation-design) · [能力覆盖](#capability-matrix) · [主体持续运行](#subject-evaluation) · [用例与测试集](#test-cases) · [基线](#baselines) · [评价器](#graders) |
 | 回归与采用 | [退化与采用](#regression-gates) · [报告与触发](#evaluation-operations) · [主动学习评估](#learning-evaluation) |
-| 专项检查 | [检索提供者与策略](#retrieval-evaluation) · [初始化与迁移](#initialization-evaluation) · [预制能力](#prebuilt-evaluation) · [任务解耦与控制](#task-control-evaluation) · [跨契约一致性](#contract-consistency-evaluation) · [隔离执行](#isolated-execution-evaluation) · [独立机密](#secret-evaluation) |
+| 专项检查 | [动态管理界面](#workspace-evaluation) · [模型与工具组合](#tool-composition-evaluation) · [检索提供者与策略](#retrieval-evaluation) · [初始化与迁移](#initialization-evaluation) · [预制能力](#prebuilt-evaluation) · [任务解耦与控制](#task-control-evaluation) · [跨契约一致性](#contract-consistency-evaluation) · [隔离执行](#isolated-execution-evaluation) · [独立机密](#secret-evaluation) |
 | 取舍与边界 | [选择与依据](#sources) · [验收场景](#validation) |
 
 <a id="purpose"></a>
@@ -597,6 +597,41 @@ flowchart TB
 正式采用同时满足已声明的质量、行为及响应要求，再比较净费用和占用收益；不按命中率、少调用次数或少生成内容独立判优。模型随机输出按原[基线方法](#baselines)比较，不能要求缓存开启前后逐字相同，也不能用同一旧答案替代重复采样。观测不足保持未知，不报告保证无退化或通用节省比例。
 
 机制见[输入与结果复用](materials-and-context.md#cache)、[执行与结算](runtime-protocol.md#execution-reuse)，事实与来源见[工程参考](engineering-reference.md#efficiency-sources)。
+
+<a id="tool-composition-evaluation"></a>
+
+### 8.12 模型与工具组合的评价规格
+
+沿[工具使用设计](whole-system-design.md#tool-assisted-capabilities)检查模型原生能力、当前可用能力和个体方法是否分别表达。主体级场景保留实际认知程序与所需状态，允许自主关注触发；下列内容为检查规格，不是已通过记录。
+
+| 场景 | 核对重点 |
+| --- | --- |
+| 纯文本模型处理图片或音频相关问题 | 先按目的选择获准能力，实际处理方取得必要媒体；原模型只取得所需派生内容，不能伪称已直接读取原始媒体 |
+| 有原生能力与专用工具两种路径 | 不强制转写或额外调用，保留选择依据；按相同目的、材料范围与判定条件评价质量、完整用量和时延 |
+| 初次描述遗漏或结果冲突 | 可追溯原资料、区域及修订，针对具体缺口补查，不凭空补全或把重复转述当独立证据 |
+| 工具缺失、无处理权限或预算到限 | 区分原因，采用获准替代方式或保留未知；不扩大外发范围或通过换工具重置用量 |
+| 慢操作、停止与既有结果复用 | 主体能处理其他关注；停止与实际效果分别记录；复用核对修订、范围与用途 |
+| 已采用方法与正常经历积累 | 无需每步模型规划，学习关闭时仍能使用工具和保存正常经历；专门策略练习继续受学习准入限制 |
+
+格式和调用归属可用确定夹具核对；识别准确性、问题理解与选择效果需要相应用途的真实能力评价。环境不支持所需工具时记录覆盖缺失，不能当作人格能力失败或比较成功。资料依据见[组合研究](whole-system-evidence.md#tool-composition-sources)。
+
+<a id="workspace-evaluation"></a>
+
+### 8.13 动态管理界面的评价规格
+
+界面局部试演检查视图、交互和管理调用，使用固定输入、替代接口与独立草稿；主体行为试验仍由宿主按[试验主体契约](#trial-subject)装配。局部界面运行不复制主体状态或生产授权，页面显示成功不替代宿主实际采用与交付事实。以下为完整设计规格；最小面板已执行的有限场景见[报告 019](experiments/019-management-workspace-validation.md#results)，不能将报告通过项外推为整张规格表已经验收。
+
+| 场景 | 应保持的行为 |
+| --- | --- |
+| 人物未初始化、模型不可用或动态页面失败 | 固定维护仍可配置连接、诊断、修复及按权限停止；页面失败不冒充主体状态丢失 |
+| 同一对象使用默认表单和专用界面 | 读取同一领域事实、提交同一契约；界面选择不改变授权及实际生效规则 |
+| 输入过程中收到状态变化或进行局部重绘 | 保留可识别草稿、焦点和输入状态；冲突明确呈现，不重复发送业务动作 |
+| 提交时连接断开，或已接纳操作后关闭页面 | 按原请求查询实际结果，不自动重发；页面释放与操作停止分开，固定控制入口仍可查到原操作 |
+| 界面与接口更新、旧页面重新连接 | 展示宿主采用和面板加载的修订，核对旧描述与草稿；局部迁移失败可进入固定维护，不伪造业务回退 |
+| 动态界面请求机密录入或尝试越过挂载范围 | 固定入口处理原值，界面仅取得允许引用与状态；不能读取受信输入、改变执行域标识或借控件取得额外能力 |
+| 从界面预览转到主体级试验 | 明确所用初态、实际程序、环境与覆盖；真实和试验管理调用由宿主分别绑定，不由候选自选 |
+
+界面可用性、管理契约正确性与主体能力收益分别评价。报告 019 的往返结果与单次开销只支持对应夹具和条件，两个界面工作区的浏览器源码编译在默认及[追加预算](experiments/019-management-workspace-validation.md#compiler-budgets)下仍未通过；尚无完整管理工作台、生产隔离或主体能力收益成绩。机制见[界面职责](management-workspace.md#dynamic-workspace)与[工程映射](engineering-reference.md#management-web)。
 
 <a id="sources"></a>
 

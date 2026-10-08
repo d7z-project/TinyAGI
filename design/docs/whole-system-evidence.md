@@ -6,7 +6,7 @@
 
 本篇汇总已有实验、设计依据和一手来源。各报告说明实际条件、统计、失败及适用边界；论文、标准和依赖库保留对应版本，不能将不同条件下的结果混用。
 
-目录：[整体任务实验](#whole-task-experiments) · [机制实验](#mechanism-experiments) · [按问题查依据](#topics) · [设计机制依据](#design-closure) · [主动学习依据](#active-learning-sources) · [任务解耦与控制依据](#task-control-sources) · [跨模块一致性依据](#consistency-basis) · [既有论文与标准](#sources)
+目录：[整体任务实验](#whole-task-experiments) · [机制实验](#mechanism-experiments) · [按问题查依据](#topics) · [设计机制依据](#design-closure) · [主动学习依据](#active-learning-sources) · [模型与工具组合依据](#tool-composition-sources) · [任务解耦与控制依据](#task-control-sources) · [跨模块一致性依据](#consistency-basis) · [既有论文与标准](#sources)
 
 主体持续运行、自主意愿与可演化认知是系统目标；既有受托任务实验仅支持相应局部机制，不决定全部认知必须采用任务流程。正常认知和机密信任边界的设计取舍见[决策台账](research-plan.md#whole-system)。
 
@@ -51,6 +51,8 @@
 | <a id="report-009"></a>009 · [取消、恢复与冲突](experiments/009-cancel-restore-evidence.md) | 取消竞争、旧快照重复风险和冲突证据需处理 | 依赖给定可信来源与恢复条件，不证明完整灾备 |
 | <a id="report-010"></a>010 · [本地存储与维护](experiments/010-local-storage.md) | 文件先发布后提交、稳定锁对象、维护排空及完整备份；长读影响写入与 checkpoint | 小型 SQLite／Linux 夹具，未测 Go 驱动、完整认知闭环、吞吐或掉电 |
 | <a id="report-018"></a>018 · [go-mini 库回归与接入](experiments/018-go-mini-library-validation.md) | 固定提交下的执行／取消、热更新、缓存、生成绑定及跨语言互通，逐项结果见报告 | 上游库用例及指定工具链；不证明完整主体、机密防泄漏、跨平台发行或性能收益 |
+| <a id="report-019"></a>019 · [动态管理界面与前后端接入](experiments/019-management-workspace-validation.md) | **成功，但存在性能问题**；Angular 外壳、浏览器 `.mgo`、绘制桥与真实 Go MRPC 主链路及桥接补充通过，浏览器编译性能诊断与各项原始结果保留 | 最小合成业务夹具；不证明完整管理工作台、生产安全、所有源码可编译或主体级沙箱 |
+| <a id="report-020"></a>020 · [go-mini 性能更新与工作台回归](experiments/020-go-mini-performance-recheck.md) | 新官方 SDK 主链路 14 项、Go 37 个顶层目标测试及小型语言工具通过；原两个浏览器工作区仍触发 `step_limit` | 增量回归，不是全库或完整主体验证；未重跑扩额矩阵，不给出通用加速倍率 |
 
 <a id="consistency-basis"></a>
 
@@ -72,6 +74,7 @@
 | --- | --- | --- |
 | 完整任务契约与有效路径 | [责任收尾](whole-system-design.md#task-contract)、[评价环境](sandbox-evaluation.md#outcome-contract) | [任务验收依据](#task-contract-sources)、[报告 015](experiments/015-task-outcome-contract.md) |
 | 上下文与任务接续 | [活动工作区](whole-system-design.md#workspace) | [Lost in the Middle：长上下文使用限制](#source-lost-in-middle) |
+| 单个模型能力不足时如何继续 | [工具使用](whole-system-design.md#tool-assisted-capabilities)、[能力匹配](runtime-protocol.md#capability-fit) | [Visual ChatGPT 与 ViperGPT](#tool-composition-sources)支持组合思路，不证明本项目质量与成本收益 |
 | 心智协作 | [协作机制](whole-system-design.md#organization) | [Scaling Agent Systems：协作与任务匹配](#source-agent-scaling)；[人格及协作资料](#interaction-references) |
 | 交付与经验 | [学习](whole-system-design.md#memory) | [Reflexion：反馈与反思](#source-reflexion)、[自我纠错限制](#source-self-correction)、[SCoRe：训练前提](#source-score) |
 | 何时继续、如何读取和评价 | [主体认知循环](whole-system-design.md#loop) | [Self-RAG：按需检索](#source-self-rag)、[模型评价的偏差](#source-model-judges)、[LongMemEval：记忆评价](#source-longmemeval) |
@@ -89,6 +92,19 @@
 | 主体级试验与可选状态导入 | [初态及激活范围](sandbox-evaluation.md#trial-subject)、[环境覆盖](sandbox-evaluation.md#trial-environment) | [AgentDojo、Temporal 与 SQLite 资料](sandbox-evaluation.md#trial-sources)；支持区分任务评价、状态保存及历史重放，按问题装配是本项目设计，未取得成本或可靠性改善的实测 |
 | 逻辑模块、模型端口与工程映射 | [逻辑契约](runtime-protocol.md#software-modules)、[软件与技术选择](engineering-reference.md#software-modules) | [官方依据与版本](engineering-reference.md#stack-sources)、[宿主组合报告](experiments/014-host-composition.md) |
 | 领域检索与同级外部提供者 | [检索分工](runtime-protocol.md#retrieval)、[接入与取舍](engineering-reference.md#retrieval-providers)、[评价](sandbox-evaluation.md#retrieval-evaluation) | [Attemory 官方接口](engineering-reference.md#retrieval-sources)和[向量服务契约](engineering-reference.md#vector-sources)支持接入方式；尚无本项目外部服务组合、检索质量或完整任务收益实测 |
+
+<a id="tool-composition-sources"></a>
+
+## 模型与工具组合的依据
+
+以下论文的固定修订摘要支持借助专用能力完成单个模型不能直接处理的工作。TinyAGI 采用其组合思想，保留自身的主体身份、能力接纳、资料范围与预算契约；不要求采用论文框架、执行语言或固定角色编制。
+
+| 来源与适用位置 | 支持的命题 | 设计推论与适用边界 |
+| --- | --- | --- |
+| [Visual ChatGPT，修订 1，2023-03-08](https://arxiv.org/abs/2303.04671v1)，摘要 | 将语言模型与多个视觉模型组合，可组织视觉问题、操作及反馈 | 支持文本认知通过视觉工具取得观察；论文系统及所用模型的结果不证明 TinyAGI 的感知质量或当前模型能力 |
+| [ViperGPT，修订 1，2023-03-14](https://arxiv.org/abs/2303.08128v1)，摘要 | 代码生成模型经 API 组合视觉与语言模块，再执行程序完成视觉推理 | 支持认知程序组织能力组合；不照搬执行语言、性能成绩，也不证明任意组合优于原生多模态处理 |
+
+人格方法、可调用能力与模型原生支持分开，是本项目的职责选择。原生处理、专用工具与组合方法的质量、时延及费用须按具体用途评价；目前没有本项目的对应组合实测。设计见[工具使用](whole-system-design.md#tool-assisted-capabilities)，未来检查规格见[能力组合评价](sandbox-evaluation.md#tool-composition-evaluation)。
 
 <a id="task-contract-sources"></a>
 

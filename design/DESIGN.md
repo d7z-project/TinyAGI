@@ -39,8 +39,9 @@ TinyAGI 要构建一个长期存在、能够自行组织认知与行动并持续
 | 人物如何创建与更新 | [初始化与自迁移](#initialization-migration) | [人物形成](docs/whole-system-design.md#self-initialization)、[引导与兼容契约](docs/runtime-protocol.md#bootstrap-migration) |
 | 如何主动学习 | [主动学习与自我迭代](#active-learning) | [主体学习策略](docs/whole-system-design.md#active-learning)、[学习强度与关闭](docs/runtime-protocol.md#learning-intensity) |
 | 如何检验和改进 | [复盘与学习](#learning)、[沙箱](#sandbox)、[能力评估与回归](#capability-evaluation) | [沙箱与评估专题](docs/sandbox-evaluation.md) |
+| 如何借助工具补足模型能力 | [总体原则](#tool-assisted-capabilities) | [认知组织](docs/whole-system-design.md#tool-assisted-capabilities)、[能力匹配](docs/runtime-protocol.md#capability-fit) |
 | 状态与能力如何协作 | [契约与所有权](#software-architecture)、[连续性](#state-continuity) | [公共能力 API](docs/runtime-protocol.md#capability-api)、[逻辑模块与模型端口](docs/runtime-protocol.md#software-modules) |
-| 怎样观察、编辑和控制系统 | [管理与人工干预](#management)、[管理场景](#management-flow) | [管理工作台](docs/management-workspace.md) |
+| 怎样观察、编辑和控制系统 | [管理与人工干预](#management)、[管理场景](#management-flow) | [工作台与动态界面](docs/management-workspace.md#dynamic-workspace)、[技术承载](docs/engineering-reference.md#management-web) |
 | 为什么采用、适用到哪里 | [取舍与证据](#decisions)、[设计状态](#validation) | [证据入口](docs/whole-system-evidence.md)、[设计台账](docs/research-plan.md) |
 
 本文维护完整逻辑架构和关键选择，六份设计专题展开机制。实验结果和一手资料从[文档索引](docs/README.md)查阅。
@@ -368,6 +369,16 @@ Goal 保存长期关注与意图，Episode 按需要承载持续活动，Task �
 
 贯穿场景见[主体在环境中的持续活动](docs/whole-system-design.md#scenario)。已有任务实验支持其中的取证、接续、交付等局部机制，完整范围见[证据索引](docs/whole-system-evidence.md)；不据此推定自主运行与长期演化效果。
 
+<a id="tool-assisted-capabilities"></a>
+
+#### 2.5.1 借助工具补足模型能力
+
+Self／Mind 根据当前目的与能力限制，发现、选择和组合获准的模型、工具及其他心智。模型原生支持、当前获准且可用的能力、人格使用这些能力的方法与经验分别表达；单个模型的原生能力不限定人格的整体可用能力。纯文本模型可经视觉分析取得图片信息，再由原心智继续判断；调用感知模型不创建另一个人格，也不改变原人格身份。
+
+能力组合按目的组织：先明确需要了解什么，再取得必要观察；信息不足时针对具体缺口补查。原始媒体由宿主交给获准处理方，派生结果保留来源、处理范围和不确定性，按需进入原认知。熟练方法可复用，原生能力合适时也可直接处理。全部调用共用既有范围、预算与控制，不承诺组合方案与原生能力在质量、时延或费用上等价，也不把每次工具调用变成人格讨论。
+
+采用理由是保持人格与计算能力解耦，复用现有能力契约补足感知和计算限制；不要求全能模型、固定视觉人格或所有媒体统一先转成文字。详细[认知流程](docs/whole-system-design.md#tool-assisted-capabilities)、[调用契约](docs/runtime-protocol.md#capability-fit)、[派生观察](docs/materials-and-context.md#derived-observations)及[资料依据](docs/whole-system-evidence.md#tool-composition-sources)分别维护。
+
 <a id="software-architecture"></a>
 
 ### 2.6 状态所有者、认知组织与公共能力契约
@@ -401,9 +412,11 @@ Goal 保存长期关注与意图，Episode 按需要承载持续活动，Task �
 
 常用表单、高级结构编辑和关联视图操作同一业务对象。字段说明当前实际值、来源、覆盖范围、修改影响和生效结果；简单编辑可直接提交，跨对象变更可统一预览。管理请求经身份／范围及业务语义核对，由原状态所有者执行；管理模块只维护请求、草稿和应用记录。常规编辑统一提交并立即生效，不能用仅保存候选冒充已采用。
 
-工作台支持可运行的试验主体、代码相关的动态表单／蓝图，以及提交后立即生效的操作流程。试验先确定问题，再选择程序、初始状态和环境；可从当前主体导入所需状态，创建后默认暂停，页面展示可测范围、缺失条件和运行结果。完整状态导入是有明确用途及兼容条件的可选方式，见[沙箱专题](docs/sandbox-evaluation.md#trial-subject)。编写契约、类型／注释描述及提交切换规则见[编辑机制](docs/management-workspace.md#revision-review)。编辑冲突仍明确显示，撤回配置不撤销已发生的交付；管理员试验是可选路径，主体自主改动的权限与采用责任仍保留。
+界面分为固定外壳、可替换界面程序和独立呈现职责。固定外壳管理导航、整体布局、会话、真实／试验范围及必要维护入口；界面程序组织具体布局、交互、草稿和管理调用，呈现职责维护控件及局部交互。领域状态、授权、任务控制与实际生效仍由宿主裁决。这样既能随能力及个体程序扩展页面，又能在动态界面故障时保留诊断、停止和修复入口。类型／注释生成的默认表单是通用入口，复杂业务可使用专用界面程序；可信机密输入始终独立于动态界面。详细分工见[动态界面契约](docs/management-workspace.md#dynamic-workspace)。
 
-管理身份与聊天身份分开，管理者查看、模型处理及对外披露分别授权。系统拥有者可完整管理，也支持有限维护、观察和沙箱范围。确定性查询、修改和停止不等待模型判断；语义辅助形成可审阅草稿，不取得额外权限。主体强自主回应与明确的管理作用分别表达。逻辑契约和完整交互见[工作台专题](docs/management-workspace.md)，具体页面承载与技术候选见[工程参考](docs/engineering-reference.md#web-workspace)。
+工作台支持可运行的试验主体。试验先确定问题，再选择程序、初始状态和环境；可从当前主体导入所需状态，创建后默认暂停，页面展示可测范围、缺失条件和运行结果。完整状态导入是有明确用途及兼容条件的可选方式，见[沙箱专题](docs/sandbox-evaluation.md#trial-subject)。界面程序的局部试演不等于创建试验主体。编写契约、类型／注释描述及提交切换规则见[编辑机制](docs/management-workspace.md#revision-review)。宿主采用结果与各界面实际使用的修订分别可见，断线界面重新读取；界面关闭、重载或换版不取消或重复派发已接纳操作。编辑冲突仍明确显示，撤回配置不撤销已发生的交付；管理员试验是可选路径，主体自主改动的权限与采用责任仍保留。
+
+管理身份与聊天身份分开，管理者查看、模型处理及对外披露分别授权。系统拥有者可完整管理，也支持有限维护、观察和沙箱范围。确定性查询、修改和停止不等待模型判断；语义辅助形成可审阅草稿，不取得额外权限。主体强自主回应与明确的管理作用分别表达。逻辑契约和完整交互见[工作台专题](docs/management-workspace.md)，前端外壳、界面程序、绘制与通信的技术选择见[工程参考](docs/engineering-reference.md#web-workspace)。
 
 <a id="domain"></a>
 
@@ -1123,7 +1136,11 @@ flowchart LR
 
 个体程序的自定义持久状态也通过宿主保存，关联 Self／Mind／模块、格式修订、可见范围与迁移责任；个体定义其主观含义，宿主管理身份、范围及可验证结构。它不能覆盖公共承诺、权限或操作事实。热加载、修复与试验状态导入共用已有状态声明，缺失或不兼容时明确受限，不清空人物。[个体扩展状态](docs/runtime-protocol.md#individual-state)
 
-记录来源、保留条件和缺失范围。资料或记忆删除及许可变化同时影响相关派生副本的处理责任；查询过滤不证明副本已经删除。只在来源仍可用且允许处理时重建索引，不能承诺重建出相同模型输出。
+持久化按用途区分权威业务状态、原始记录与正式产物、派生数据、临时运行数据。这是各领域采用的保存规则，不新增通用业务对象。统一事件交互不要求永久保存每个事件，也不要求靠完整事件日志重建主体；Self／Mind 的身份、关注和个体状态独立于聊天及任务保存。[保存规则](docs/runtime-protocol.md#storage)
+
+已接纳的普通交流原文默认长期保留，可按渠道、用户和用途设置保留期或明确采用临时模式。原文、修订、来源与实际交付分别保存，摘要不覆盖原文，原始记录不自动成为可信事实或长期记忆。群体记录分别维护保管责任、参与者与披露范围，机密输入走独立通路。[原始记录与保留](docs/materials-and-context.md#original-records)
+
+记录来源、保留条件和缺失范围。资料或记忆删除及许可变化同时影响相关派生副本的处理责任；查询过滤不证明副本已经删除。只在来源、工具和当前许可仍支持时重建派生数据，不能承诺重建出相同模型输出。必要状态和正式成果不以缓存形式作为唯一保存位置；容量不足时明确限制新接纳，不静默删除这些内容。[保留与维护](docs/management-workspace.md#storage-management)
 
 ### 9.2 执行中断与责任接续
 
@@ -1214,7 +1231,7 @@ flowchart LR
 | --- | --- | --- |
 | 预制能力与个体实现 | 预制工具随客户端维护，Self 按需调用、组合或不用；维护权与调用作用分别定义 | [预制能力](#prebuilt-capabilities)；保留主观认知自由，运行约束统一；源码装配与语言工具支持接入，收益未实测 |
 | 提示词初始化与自迁移 | 完整提示词及语义差异引导个体实现；兼容窗口支持旧主体自行修改，固定引导机制处理首次生成与失效修复 | [生命周期](#initialization-migration)；接受人格差异，必要契约统一；注释及库资料支持接入，生成与迁移效果尚无实测 |
-| 完整管理与人工干预 | 所有受管理对象有管理入口；表单／高级编辑共用对象，修改沿原状态所有者执行；来源、影响、生效及结果可见 | [管理设计](docs/management-workspace.md)；配置语义与官方资料支持此选择，未实现或评测界面；不采用仅只读面板、模型代理全部管理或通用表编辑 |
+| 完整管理与人工干预 | 所有受管理对象有管理入口；表单／高级编辑共用对象，修改沿原状态所有者执行；来源、影响、生效及结果可见 | [管理设计](docs/management-workspace.md)；配置语义、官方资料及[最小界面实验](docs/experiments/019-management-workspace-validation.md)支持分工，完整工作台仍待实现；不采用仅只读面板、模型代理全部管理或通用表编辑 |
 | 独立机密与授权交付 | Secret 独立管理，代理使用和向获授权执行方交付原值并存；分配、审计及撤销分别维护 | [机密机制](docs/management-workspace.md#secret-management)；资料支持权限和审计分工，原值交付是信任决定，不能保证接收方忘记原值或全部外部使用均可观察 |
 | 规范化热加载与函数调用 | 采用：受约束模块、类型推导及结构化注释生成调用／表单／蓝图描述，在调用边界统一切换 | [编写契约](docs/runtime-protocol.md#managed-functions)；减少手写适配与任意栈恢复需求，具体生成工具尚未实现 |
 | 能力构建与采用 | 按需复用、构建、分层试验和按适用范围采用；接口与实现分离，宿主管理持续运行 | [能力闭环](#capability-development)；既有库 API 与工具链资料支持机制，未验证自动构建成功率或任务收益 |
@@ -1242,7 +1259,7 @@ flowchart LR
 
 [实验与资料索引](docs/whole-system-evidence.md)统一列出报告、原始数据、来源版本和适用范围。当前有状态模型、预编排流程、本地组件、固定语料检索、[真实模型开发对照](docs/experiments/015-task-outcome-contract.md)、[功能事件测试](docs/experiments/016-functional-events.md)及[接续／投入对照](docs/experiments/017-continuation-study.md)；**尚无独立保留任务上的稳定收益、正式能力基线或真人体验证据**。组件接通、格式通过和候选检索命中都不能替代完整任务质量。
 
-原论文和源码支持特定命题或设计动机；自主意愿等价值取向属于设计目标。未经比较的方案保留为效果未知，不能写成实验证伪。执行库回归与跨语言接入的独立证据见[库验证报告](docs/experiments/018-go-mini-library-validation.md)，只支持所测组件契约，不替代完整主体效果。工程约束见[工程参考](docs/engineering-reference.md)，完整统计见各实验报告。
+原论文和源码支持特定命题或设计动机；自主意愿等价值取向属于设计目标。未经比较的方案保留为效果未知，不能写成实验证伪。执行库回归与跨语言接入的独立证据见[库验证报告](docs/experiments/018-go-mini-library-validation.md)，只支持所测组件契约，不替代完整主体效果。另有[管理界面接入报告](docs/experiments/019-management-workspace-validation.md)验证最小面板的前后端往返，并记录源码编译范围限制；[库更新复测](docs/experiments/020-go-mini-performance-recheck.md)保持主链路通过，复杂浏览器编译仍受限。不等于完整工作台或主体已经交付。工程约束见[工程参考](docs/engineering-reference.md)，完整统计见各实验报告。
 
 ### 10.3 不采用或暂缓的方向
 

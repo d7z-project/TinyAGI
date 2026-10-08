@@ -13,6 +13,7 @@
 | 阅读目的 | 路线 |
 | --- | --- |
 | 建立整体认识 | [总设计](../DESIGN.md#reading-guide) → 目标／逻辑总图 → 核心概念 → 完整场景 → 机制与取舍 |
+| 理解人格如何借助工具补足能力 | [总体原则](../DESIGN.md#tool-assisted-capabilities) → [认知组织](whole-system-design.md#tool-assisted-capabilities) → [能力匹配](runtime-protocol.md#capability-fit) → [派生观察](materials-and-context.md#derived-observations) → [评价](sandbox-evaluation.md#tool-composition-evaluation) |
 | 理解主体自主运行 | [持续主体](whole-system-design.md#overview) → [认知循环](whole-system-design.md#loop) → [直接认知归属](runtime-protocol.md#cognitive-scope) → [主体评价](sandbox-evaluation.md#subject-evaluation) |
 | 核对跨专题一致性 | [统一决策](research-plan.md#architecture-consistency) → [步骤与操作](runtime-protocol.md#step-operation-admission)／[公共决策](whole-system-design.md#public-decisions)／[配置与当前约束](runtime-protocol.md#configuration-resolution) |
 | 选择、组合和管理检索 | [总体分工](../DESIGN.md#retrieval) → [公共契约](runtime-protocol.md#retrieval) → [向量服务与 Attemory](engineering-reference.md#retrieval-providers) → [管理](management-workspace.md#retrieval-management) → [评价](sandbox-evaluation.md#retrieval-evaluation) |
@@ -22,8 +23,10 @@
 | 使用客户端预制能力 | [总体选择](../DESIGN.md#prebuilt-capabilities) → [维护与调用契约](runtime-protocol.md#prebuilt-library) → [工程接入](engineering-reference.md#client-library) |
 | 创建与更新人物 | [总体流程](../DESIGN.md#initialization-migration) → [引导契约](runtime-protocol.md#bootstrap-migration) → [管理入口](management-workspace.md#initialization-management) → [工程接入](engineering-reference.md#prompt-bootstrap) |
 | 创建试验主体与比较行为 | [总体沙箱](../DESIGN.md#sandbox) → [初态与导入](sandbox-evaluation.md#trial-initial-state) → [环境覆盖](sandbox-evaluation.md#trial-environment) → [工作台](management-workspace.md#trial-management) → [评价](sandbox-evaluation.md#regression-gates) |
+| 理解管理端与动态界面 | [总体职责](../DESIGN.md#management-workspace) → [外壳／界面／呈现分工](management-workspace.md#dynamic-workspace) → [编辑与生效](management-workspace.md#dynamic-editing) → [Angular、界面程序与 MRPC](engineering-reference.md#management-web) → [库事实](go-mini-integration.md#browser-workspace-facts) → [前后端实验](experiments/019-management-workspace-validation.md) |
 | 理解计算节约与复用 | [总体选择](../DESIGN.md#resource-efficiency) → [输入与结果](materials-and-context.md#cache) → [执行与结算](runtime-protocol.md#execution-reuse) → [接入依据](engineering-reference.md#efficiency-integration) → [评价](sandbox-evaluation.md#efficiency-evaluation) |
 | 深入某项机制 | 从总设计或下表进入对应专题；专题维护详细规则，其他文档只保留必要概览和链接 |
+| 查看 mini-go 性能更新复测 | [库更新记录](go-mini-integration.md#performance-update) → [报告 020](experiments/020-go-mini-performance-recheck.md)；主链路通过，复杂浏览器编译仍受限 |
 | 理解具体承载 | [工程参考](engineering-reference.md#physical-architecture) → 技术栈／存储／能力接入 → [库事实](go-mini-integration.md) |
 | 更新执行库与核对接入 | [当前库基线](go-mini-integration.md#current-verification) → [库回归报告](experiments/018-go-mini-library-validation.md) → [后续更新流程](go-mini-integration.md#update-verification) |
 | 核对选择与状态 | [设计台账](research-plan.md#closure-status) → 采用理由／备选／用途配置 → [证据索引](whole-system-evidence.md) |
@@ -37,7 +40,7 @@
 | [资料、领域视图与认知输入](materials-and-context.md) | 领域对象及关系、资料内容与表示、受限视图、来源、选读及执行使用；外部事件源、有限思考、稳定输入装配、结果复用及增量准备 |
 | [逻辑模块、能力契约与运行协议](runtime-protocol.md) | 主体直接认知归属、统一事件、能力构建与运行对象、学习强度及关闭、模型端口、步骤／操作接纳与生命周期、配置解析、个体状态与实现信任 |
 | [沙箱、能力评估与回归](sandbox-evaluation.md) | 局部／组合／主体级试验、构建环境、试验主体生命周期、隔离、复盘、测试材料、基线、评价及采用 |
-| [管理工作台与人工干预](management-workspace.md) | 管理入口及身份、模型／服务及能力构建维护、独立机密的对象／权限／授权分配／审计与可信提交、动态表单／蓝图、提交与观察 |
+| [管理工作台与人工干预](management-workspace.md) | 管理入口及身份、固定外壳／界面程序／呈现分工、模型／服务及能力构建维护、独立机密与可信提交、动态编辑、提交与观察 |
 
 跨专题边界：资料专题维护对象关系、资料内容和面向接收者的视图；主体专题维护记忆与判断；运行专题维护程序、配置、模型及能力的操作接纳；管理专题维护页面交互和独立机密机制。各领域保留状态所有权，查询和页面不形成通用资源管理层；沙箱按领域装配，工程参考集中维护承载。
 
@@ -46,7 +49,7 @@
 | 参考 | 唯一维护范围 |
 | --- | --- |
 | [实施方案与阶段验收](../TODO.md) | 阶段顺序、交付内容、首批完整链路、实现契约及验收安排；规划不代表已实现 |
-| [工程选型与部署](engineering-reference.md) | 物理部署、软件组合、技术栈、能力工具链／子进程、存储／文件、向量服务与 Attemory 接入及选型依据 |
+| [工程选型与部署](engineering-reference.md) | 物理部署、软件组合、技术栈、管理前端及 MRPC、能力工具链／子进程、存储／文件、向量服务与 Attemory 接入及选型依据 |
 | [go-mini 库行为与接入](go-mini-integration.md) | 固定提交的源码核对与库回归、MRPC 多语言／资源／替换、实例／scope／补丁及宿主接入限制 |
 
 <a id="experiments"></a>
@@ -106,6 +109,8 @@
 | Operation、Effect、Outcome、unknown | [操作与效果](runtime-protocol.md#operations)、[用途评价](../DESIGN.md#outcomes) |
 | 依赖、执行条件、结果复核 | [复核](runtime-protocol.md#revalidation) |
 | 基础受限执行、额外隔离与环境缺失 | [执行分类](runtime-protocol.md#execution-classes)、[工程装配](engineering-reference.md#task-execution) |
+| 状态、原始记录、派生与临时数据 | [逻辑分工](runtime-protocol.md#storage)、[数据放置](engineering-reference.md#storage)、[性能依据](engineering-reference.md#storage-performance) |
+| 交流原文、修订、媒体、保留与清理 | [原始记录](materials-and-context.md#original-records)、[保留规则](materials-and-context.md#retention)、[管理入口](management-workspace.md#storage-management) |
 | 记忆形成、保留、遗忘与学习关闭 | [记忆生命周期](whole-system-design.md#memory-lifecycle) |
 | 已读内容失效、受众变化与外部会话停用 | [上下文有效性](materials-and-context.md#context-validity) |
 | 已交付结论、更正与有限通知 | [纠正处置](whole-system-design.md#delivery-correction) |
@@ -130,6 +135,8 @@
 | 可选容器、Rootless Docker 与 gVisor | [工程承载及取舍](engineering-reference.md#container-execution)、[官方资料与适用边界](engineering-reference.md#container-sources)；依赖可选，必要执行限制不可自动降级 |
 | 客户端预制能力库、只读维护、可选使用与个体包装 | [逻辑契约](runtime-protocol.md#prebuilt-library)、[管理](management-workspace.md#prebuilt-management)、[评价](sandbox-evaluation.md#prebuilt-evaluation)、[库事实](go-mini-integration.md#prebuilt-library-facts)、[状态](research-plan.md#prebuilt-extension) |
 | 热加载、编写契约、结构化注释与受管理函数 | [总设计](../DESIGN.md#hot-reload-contract)、[逻辑契约](runtime-protocol.md#managed-functions)、[表单与蓝图](management-workspace.md#dynamic-editing)、[函数测试](sandbox-evaluation.md#function-evaluation)、[工程生成工具](engineering-reference.md#managed-function-tooling) |
+| 管理外壳、动态界面、控件及页面生命周期 | [逻辑分工](management-workspace.md#dynamic-workspace)、[生效与接续](management-workspace.md#apply)、[评价规格](sandbox-evaluation.md#workspace-evaluation) |
+| Angular、浏览器 `.mgo`、绘制桥与管理 MRPC | [技术分工](engineering-reference.md#management-web)、[通信与身份](engineering-reference.md#workspace-rpc)、[源码分发](engineering-reference.md#workspace-distribution)、[库依据](go-mini-integration.md#browser-workspace-facts)、[设计范围](research-plan.md#management-extension) |
 | 普通配置、作用域覆盖、当前权限与控制 | [解析与生效](runtime-protocol.md#configuration-resolution)、[管理视图](management-workspace.md#editing) |
 | 个体自定义状态、结构修订与迁移 | [逻辑契约](runtime-protocol.md#individual-state)、[存储映射](engineering-reference.md#individual-state-storage) |
 | 模型资产与推理服务维护 | [管理范围](management-workspace.md#technical-management)、[工程映射](engineering-reference.md#maintenance-secrets) |
